@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Portfolio</title>
+
+    <style>
+
+        body {
+            color: rgb(255, 255, 255);
+            background-image: url("knockout.JPG");
+            background-size: cover;
+            font-family: Arial;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        .card {
+            background: rgb(255, 255, 255,0.2);
+            padding: 30px;
+            border-radius: 15px;
+            width: 300px;
+            margin: auto;
+            backdrop-filter: blur(7px) saturate(120%);
+            -webkit-backdrop-filter: blur(7px) saturate(120%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+        .card h2{
+            margin-top: 160px;
+            font-size: 18px;
+        }
+        .card p{
+            opacity: 0.7;
+            font-size: 14px;
+        }
+        .card {
+            position: relative;
+            overflow: hidden;
+
+            
+        }
+        .card::before{
+            content: "";
+            position: absolute;
+            inset: -50%;
+            background: radial-gradient(
+                circle at var(--x,50%) var(--y,50%),
+                rgba(0, 255, 200, 0.3),
+                transparent 60%
+            );
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        img {
+            width: 200px;
+            height: 190px;
+            border-radius: 50%;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #225edf;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #55c3ff;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: #225edf;
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .btn:hover{
+            background: #55c3ff;
+            transform: scale(1.05);
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #163a9c;
+        }
+        
+    </style>
+</head>
+
+<body>
+    
+    <div class="card">
+        <img src="IMG_3042.jpg" />
+
+        <h1>魏新垚</h1>
+        <h3>wisinyo</h3>
+
+        <p>前端学习者 / 对设计和交互感兴趣</p>
+
+        <h3>兴趣</h3>
+        <p>🎨 画画 | 💻 前端 | 🎮 CS2</p>
+
+        <a href="https://github.com/457622458-ctrl" class = "btn" target="_blank">
+            About Me
+        </a>
+    </div>
+    <script>
+const card = document.querySelector(".card");
+
+card.addEventListener("mousemove", (e) => {
+    const rect = card.getBoundingClientRect();
+
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    card.style.setProperty("--x", x + "px");
+    card.style.setProperty("--y", y + "px");
+});
+</script>
+
+</body>
+</html>

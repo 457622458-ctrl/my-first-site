@@ -1,139 +1,425 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>My Portfolio</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocktail Master - Ultimate Interactive Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: { colors: { ios: { red: '#FA2D48', blue: '#007AFF', gray: '#8E8E93', darkBg: '#000000' } } }
+            }
+        }
+    </script>
     <style>
-
-        body {
-            color: rgb(255, 255, 255);
-            background-image: url("knockout.JPG");
-            background-size: cover;
-            font-family: Arial;
-            text-align: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            
-        }
-        html, body {
-            height: 100%;
-            margin: 0;
-        }
-
-        .card {
-            background: rgb(255, 255, 255,0.2);
-            padding: 30px;
-            border-radius: 15px;
-            width: min(90vw, 300px);
-            margin: auto;
-            backdrop-filter: blur(7px) saturate(120%);
-            -webkit-backdrop-filter: blur(7px) saturate(120%);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-        }
-        .card h2{
-            margin-top: 160px;
-            font-size: 18px;
-        }
-        .card p{
-            opacity: 0.7;
-            font-size: 14px;
-        }
-        .card {
-            position: relative;
-            overflow: hidden;
-
-            
-        }
-        .card::before{
-            content: "";
-            position: absolute;
-            inset: -50%;
-            background: radial-gradient(
-                circle at var(--x,50%) var(--y,50%),
-                rgba(0, 255, 200, 0.3),
-                transparent 60%
-            );
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            pointer-events: none;
-        }
-        .card:hover::before {
-            opacity: 1;
-        }
-
-        img {
-            width: 200px;
-            height: 190px;
-            border-radius: 50%;
-        }
-
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background: #225edf;
-            color: white;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #55c3ff;
-        }
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            border-radius: 8px;
-            background: #225edf;
-            color: white;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-        .btn:hover{
-            background: #55c3ff;
-            transform: scale(1.05);
-        }
-        .btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #163a9c;
-        }
+        body { background-color: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+        .iphone { width: 375px; height: 780px; border-radius: 50px; border: 12px solid #1a1a1a; box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.8); position: relative; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.6s cubic-bezier(0.32, 0.72, 0, 1); background: #000; }
         
+        /* 页面级过渡容器 */
+        .content-wrap { flex: 1; display: flex; flex-direction: column; height: 100%; transition: all 0.6s cubic-bezier(0.32, 0.72, 0, 1); position: relative; overflow: hidden; }
+        .content-shrink { transform: scale(0.92); border-radius: 40px; opacity: 0.6; pointer-events: none; }
+        
+        /* App 内容区，交由 JS 控制过渡 */
+        .content { flex: 1; overflow-y: auto; scroll-behavior: smooth; width: 100%; height: 100%; padding-bottom: 90px; }
+        .content::-webkit-scrollbar { width: 0; }
+
+        .glass-pill { backdrop-filter: saturate(210%) blur(30px); background: rgba(35, 35, 38, 0.85); border: 0.5px solid rgba(255, 255, 255, 0.1); }
+        .tab-bar-container { position: absolute; bottom: 24px; left: 0; right: 0; display: flex; justify-content: center; padding: 0 16px; z-index: 100; transition: transform 0.5s; }
+        .tab-bar-pill { height: 68px; width: 100%; border-radius: 34px; display: flex; padding: 0 8px; align-items: center; }
+        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #8E8E93; cursor: pointer; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); font-weight: 600; transform-origin: bottom; }
+        .tab-item:active { transform: scale(0.85) translateY(2px); opacity: 0.7; }
+        .tab-item.active { color: white; transform: scale(1.15) translateY(-2px); }
+
+        @keyframes fluid-rotate { from { transform: translate(-10%, -10%) rotate(0deg); } to { transform: translate(10%, 10%) rotate(360deg); } }
+        .liquid-bg { position: relative; overflow: hidden; background: #111; }
+        .liquid-bg::before { content: ''; position: absolute; top: -75%; left: -75%; width: 250%; height: 250%; background: var(--bg-grad); filter: blur(55px); animation: fluid-rotate 25s infinite linear; opacity: 0.85; z-index: 0; }
+
+        .cover-card { aspect-ratio: 1 / 1; border-radius: 18px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; }
+        .cover-card:active { transform: scale(0.92); box-shadow: 0 4px 15px rgba(0,0,0,0.4); filter: brightness(0.9); }
+        .cover-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; z-index: 10; }
+        
+        .category-tile { aspect-ratio: 1.8 / 1; border-radius: 14px; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transform-origin: center; }
+        .category-tile:active { transform: scale(0.9); filter: brightness(0.7); }
+
+        #recipeDetail { transition: transform 0.6s cubic-bezier(0.32, 0.72, 0, 1); will-change: transform; }
+        .detail-show .detail-inner { opacity: 1; transform: translateY(0); }
+        .detail-inner { transition: all 0.4s ease 0.1s; opacity: 0; transform: translateY(25px); }
+
+        .ing-tag { border: 1px solid rgba(255,255,255,0.2); color: #8E8E93; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); background: rgba(255,255,255,0.05); }
+        .ing-tag:active { transform: scale(0.9); }
+        .ing-tag.selected { background: #FA2D48; color: white; border-color: #FA2D48; transform: scale(1.05); box-shadow: 0 4px 15px rgba(250,45,72,0.5); }
+
+        @keyframes stagger-fade-in { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .stagger-item { opacity: 0; animation: stagger-fade-in 0.5s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+
+        @keyframes pour-action { 0% { stroke-dashoffset: 40; } 100% { stroke-dashoffset: 0; } }
+        @keyframes muddle-action { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+        @keyframes shake-action { 0%, 100% { transform: rotate(0) scale(1); } 25% { transform: rotate(10deg) scale(1.05); } 75% { transform: rotate(-10deg) scale(0.95); } }
+        @keyframes item-fall { 0% { transform: translateY(-100px) rotate(-30deg); opacity: 0; } 60% { opacity: 1; } 100% { transform: translateY(0) rotate(10deg); opacity: 1; } }
+        @keyframes surface-ripple { 0% { transform: scaleX(0.7) scaleY(0.7); opacity: 0.6; } 100% { transform: scaleX(1.3) scaleY(1.3); opacity: 0; } }
+        @keyframes spin-stir { 0% { transform: scaleX(1); } 50% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
+
+        .anim-pour-line { stroke-dasharray: 8 8; animation: pour-action 0.3s infinite linear; }
+        .anim-muddler { animation: muddle-action 0.5s infinite ease-in-out; }
+        .anim-shaker { animation: shake-action 0.1s infinite; transform-origin: center; }
+        .anim-item-fall { animation: item-fall 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .anim-ripple { animation: surface-ripple 1.2s infinite ease-out; transform-origin: center; }
+        .anim-stir { animation: spin-stir 1s infinite linear; transform-origin: center; }
     </style>
 </head>
+<body class="dark">
 
-<body>
-    
-    <div class="card">
-        <img src="IMG_3042.jpg" />
-
-        <h1>魏新垚</h1>
-        <h3>wisinyo</h3>
-
-        <p>前端学习者 / 对设计和交互感兴趣</p>
-
-        <h3>兴趣</h3>
-        <p>🎨 画画 | 💻 前端 | 🎮 CS2</p>
-
-        <a href="https://github.com/457622458-ctrl" class = "btn" target="_blank">
-            About Me
-        </a>
+<div class="iphone dark bg-ios-darkBg" id="appRoot">
+    <div class="absolute top-0 w-full h-11 flex justify-between items-center px-8 z-[110] text-[12px] font-bold text-white pointer-events-none">
+        <span>9:41</span>
+        <div class="flex space-x-1.5 items-center"><span>📶</span><span>🔋</span></div>
     </div>
-    <script>
-const card = document.querySelector(".card");
 
-card.addEventListener("mousemove", (e) => {
-    const rect = card.getBoundingClientRect();
+    <!-- 包装整个页面的容器，JS 控制切换动画 -->
+    <div class="content-wrap" id="mainWrapper">
+        <div class="content" id="appContent"></div>
+    </div>
 
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    <!-- 沉浸式详情层 -->
+    <div id="recipeDetail" class="absolute inset-0 z-[120] transform translate-y-full flex flex-col overflow-hidden liquid-bg">
+        <div class="h-12 flex items-center justify-between px-6 mt-12 relative z-20 text-white">
+            <button onclick="closeRecipeDetail()" class="w-10 h-10 flex items-center justify-center bg-black/40 backdrop-blur-xl rounded-full text-xl hover:rotate-90 active:scale-75 transition-all duration-300">✕</button>
+            <button id="detailFavBtn" class="text-3xl active:scale-150 transition-all duration-300" onclick="toggleFavorite()">☆</button>
+        </div>
+        <div class="flex-1 overflow-y-auto px-6 pb-48 relative z-10 text-white detail-inner" id="detailContent"></div>
+        <div class="absolute bottom-10 left-0 right-0 px-8 z-20">
+            <button onclick="closeRecipeDetail()" class="glass-pill w-full py-4 rounded-full font-extrabold text-white shadow-2xl hover:brightness-110 active:scale-95 transition-all duration-300">完成</button>
+        </div>
+    </div>
 
-    card.style.setProperty("--x", x + "px");
-    card.style.setProperty("--y", y + "px");
-});
+    <!-- 底部 Tab 栏 -->
+    <div class="tab-bar-container" id="bottomTab">
+        <div class="tab-bar-pill glass-pill">
+            <div class="tab-item active" id="tab-recipes" onclick="switchPage('recipes', this)"><div class="w-7 h-7 mb-0.5"><svg viewBox="0 0 32 32" class="fill-current"><rect x="5" y="5" width="9" height="9" rx="2.5"/><rect x="18" y="5" width="9" height="9" rx="2.5"/><rect x="5" y="18" width="9" height="9" rx="2.5"/><rect x="18" y="18" width="9" height="9" rx="2.5"/></svg></div><span>配方</span></div>
+            <div class="tab-item" id="tab-cabinet" onclick="switchPage('cabinet', this)"><div class="w-7 h-7 mb-0.5"><svg viewBox="0 0 32 32" class="fill-current"><path d="M6 6h20v4H6zM8 12h16v14H8zM14 16h4v2h-4z"/></svg></div><span>酒柜</span></div>
+            <div class="tab-item" id="tab-randomizer" onclick="switchPage('randomizer', this)"><div class="w-7 h-7 mb-0.5"><svg viewBox="0 0 32 32" class="fill-current"><path d="M4 22h4.5l6-12H21l-4.5 4.5 2.1 2.1 8.1-8.1-8.1-8.1-2.1 2.1 4.5 4.5h-7.5l-6 12H4v3zM21 18l-1.5 1.5 3 3H4v3h18.5l-3 3 1.5 1.5 5.5-5.5L21 18z"/></svg></div><span>抽选</span></div>
+            <div class="tab-item" id="tab-search" onclick="switchPage('search', this)"><div class="w-7 h-7 mb-0.5"><svg viewBox="0 0 32 32" class="fill-current"><path d="M22.5 20h-1.32l-.46-.45c1.64-1.9 2.63-4.36 2.63-7.05 0-6.08-4.92-11-11-11s-11 4.92-11 11 4.92 11 11 11c2.69 0 5.15-.99 7.05-2.63l.45.46v1.32l8.35 8.35L29 28.35 22.5 20zm-10.15 0c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg></div><span>搜索</span></div>
+            <div class="w-[0.5px] h-8 bg-white/10 mx-1"></div>
+            <div class="tab-item" id="tab-profile" onclick="switchPage('profile', this)"><svg viewBox="0 0 32 32" class="w-6 h-6 fill-current"><path d="M22 6h-12c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-14c0-1.1-.9-2-2-2zm-8 16c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z"/><circle cx="16" cy="16" r="2.5"/></svg></div>
+        </div>
+    </div>
+    <div id="toast" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-2xl text-white px-8 py-4 rounded-3xl z-[200] hidden transition-all opacity-0 font-bold text-center shadow-2xl"></div>
+</div>
+
+<script>
+    // --- 全局状态 ---
+    let favoritedIds = [];
+    let currentDetailId = null;
+    let animTimer = null;
+    let isOz = false; 
+    let myCabinet = [];
+
+    const appleColors = ["#FA2D48", "#AF52DE", "#5856D6", "#007AFF", "#34C759", "#FF9500", "#FFCC00", "#FF2D55", "#30B0C7", "#5AC8FA"];
+    const generatePalette = (id) => `radial-gradient(circle at 20% 30%, ${appleColors[id % 10]} 0%, transparent 60%), radial-gradient(circle at 80% 70%, ${appleColors[(id*3)%10]} 0%, transparent 60%), radial-gradient(circle at 50% 50%, ${appleColors[(id*7)%10]} 0%, transparent 50%)`;
+
+    const cabinetItems = [
+        { name: '琴酒', kw: ['金酒','琴酒'] }, { name: '伏特加', kw: ['伏特加'] }, { name: '朗姆酒', kw: ['朗姆'] }, { name: '龙舌兰', kw: ['龙舌兰'] },
+        { name: '威士忌', kw: ['威士忌'] }, { name: '白兰地', kw: ['白兰地','干邑'] }, { name: '利口酒', kw: ['君度','橙酒','百利甜','咖啡','薄荷','樱桃'] },
+        { name: '味美思/开胃', kw: ['味美思','金巴利','阿佩罗','苦艾酒'] }, { name: '苦精', kw: ['苦精'] }, { name: '果汁/柑橘', kw: ['柠檬','青柠','果汁'] },
+        { name: '汽水/苏打', kw: ['苏打','汽水','可乐','姜汁','雪碧'] }, { name: '糖/糖浆', kw: ['糖'] }, { name: '蛋奶类', kw: ['蛋清','奶油','牛奶'] }
+    ];
+
+    function genFlavor(base, hasJuice) {
+        if(base.includes('威士忌')) return [20, 30, 70, 85, 20];
+        if(base.includes('琴酒')) return [hasJuice?60:20, 30, 50, 70, 50];
+        if(base.includes('朗姆')) return [50, 60, 20, 50, 70];
+        if(base.includes('龙舌兰')) return [60, 40, 40, 70, 60];
+        if(base.includes('伏特加')) return [40, 40, 20, 60, 60];
+        return [40, 50, 40, 50, 50];
+    }
+
+    // 100 款真实 IBA 配方库
+    const namesEN = ["Mojito", "Negroni", "Old Fashioned", "Dry Martini", "Margarita", "Daiquiri", "Long Island Iced Tea", "Manhattan", "Cosmopolitan", "Sidecar", "Whiskey Sour", "Aviation", "Corpse Reviver #2", "Last Word", "White Lady", "Paloma", "Moscow Mule", "Pimm's Cup", "Aperol Spritz", "Clover Club", "Gin Fizz", "B-52", "Mary Pickford", "Paper Plane", "Penicillin", "Espresso Martini", "Mai Tai", "Jungle Bird", "Pisco Sour", "Bellini", "French 75", "Vesper", "Hanky Panky", "Bee's Knees", "Bramble", "Tom Collins", "Martinez", "Sazerac", "Southside", "Ramos Gin Fizz", "Stinger", "Alexander", "Blue Lagoon", "Grasshopper", "Tequila Sunrise", "Bamboo", "Adonis", "Bijou", "Rob Roy", "Zombie", "Bloody Mary", "Pina Colada", "Gimlet", "Salty Dog", "Boulevardier", "Dark 'n' Stormy", "Vieux Carre", "White Russian", "Black Russian", "French Connection", "Godfather", "Godmother", "Harvey Wallbanger", "Irish Coffee", "Lemon Drop", "Mimosa", "Mint Julep", "Sangria", "Sea Breeze", "Singapore Sling", "Tuxedo", "Whisky Mac", "Americano", "Angel Face", "Between the Sheets", "Caipirinha", "Hemingway Special", "Ti' Punch", "Golden Dream", "Kir Royale", "Jack Rose", "Aventinus", "Puccini", "Vampiro", "Yellow Bird", "Barracuda", "Casino", "Derby", "Dirty Martini", "El Presidente", "Gibson", "Hole in One", "Paradise", "Porto Flip", "Russian Spring Punch", "Screwdriver", "Sherry Cobbler", "St-Germain Spritz", "A1", "Cuba Libre"];
+    const namesZH = ["莫吉托", "尼格罗尼", "古典", "干马天尼", "玛格丽特", "得其利", "长岛冰茶", "曼哈顿", "大都会", "边车", "威士忌酸", "飞行", "亡者复苏2号", "最后遗言", "白色佳人", "帕洛玛", "莫斯科骡子", "皮姆之杯", "阿佩罗苏打", "三叶草俱乐部", "金菲士", "B-52轰炸机", "玛丽毕克馥", "纸飞机", "盘尼西林", "浓缩马天尼", "迈泰", "丛林鸟", "皮斯可酸", "贝利尼", "法式75", "薇丝帕", "调情", "蜜蜂膝盖", "布兰博", "汤姆可林斯", "马丁内斯", "萨泽拉克", "南区", "拉莫斯金菲士", "毒刺", "亚历山大", "蓝色湖泊", "蚱蜢", "龙舌兰日出", "青竹", "阿多尼斯", "宝石", "罗伯罗伊", "僵尸", "血腥玛丽", "椰林飘香", "吉姆雷特", "咸狗", "花花公子", "月黑风高", "老广场", "白俄罗斯", "黑俄罗斯", "法国贩毒网", "教父", "教母", "哈维撞墙", "爱尔兰咖啡", "柠檬糖", "含羞草", "薄荷茱莉普", "桑格利亚", "海风", "新加坡司令", "燕尾服", "威士忌麦克", "美国佬", "天使面庞", "床笫之间", "凯匹林纳", "海明威特调", "提庞契", "金色梦想", "皇家基尔", "杰克玫瑰", "艾文提纳斯", "普契尼", "吸血鬼", "黄鸟", "梭子鱼", "赌场", "德比", "肮脏马天尼", "总统", "吉布森", "一杆进洞", "天堂", "波特菲利普", "俄罗斯春季宾治", "螺丝起子", "雪莉酷乐", "圣哲曼苏打", "A1特调", "自由古巴"];
+    const bases = ["朗姆酒", "琴酒", "威士忌", "琴酒", "龙舌兰", "朗姆酒", "混合", "威士忌", "伏特加", "白兰地", "威士忌", "琴酒", "琴酒", "琴酒", "琴酒", "龙舌兰", "伏特加", "利口酒", "利口酒", "琴酒", "琴酒", "利口酒", "朗姆酒", "威士忌", "威士忌", "伏特加", "朗姆酒", "朗姆酒", "白兰地", "起泡酒", "琴酒", "琴酒", "琴酒", "琴酒", "琴酒", "琴酒", "琴酒", "威士忌", "琴酒", "琴酒", "白兰地", "白兰地", "伏特加", "利口酒", "龙舌兰", "雪莉酒", "雪莉酒", "琴酒", "威士忌", "朗姆酒", "伏特加", "朗姆酒", "琴酒", "伏特加", "威士忌", "朗姆酒", "威士忌", "伏特加", "伏特加", "白兰地", "威士忌", "伏特加", "伏特加", "威士忌", "伏特加", "起泡酒", "威士忌", "红酒", "伏特加", "琴酒", "琴酒", "威士忌", "利口酒", "琴酒", "白兰地", "卡莎萨", "朗姆酒", "朗姆酒", "利口酒", "起泡酒", "苹果白兰地", "威士忌", "起泡酒", "龙舌兰", "朗姆酒", "朗姆酒", "琴酒", "威士忌", "琴酒", "朗姆酒", "琴酒", "威士忌", "琴酒", "波特酒", "伏特加", "伏特加", "雪莉酒", "利口酒", "琴酒", "朗姆酒"];
+
+    function generateRecipe(zh, en, base) {
+        let glass = "rocks", abv = 18;
+        if (en.includes("Martini") || en.includes("Manhattan") || en.includes("Cosmopolitan") || en.includes("Aviation")) glass = "martini", abv=26;
+        else if (base === "起泡酒" || en.includes("75") || en.includes("Bellini")) glass = "flute", abv=12;
+        else if (en.includes("Collins") || en.includes("Fizz") || en.includes("Mule") || en.includes("Tea") || en.includes("Mary")) glass = "highball", abv=14;
+        else if (en.includes("Daiquiri") || en.includes("Margarita") || en.includes("Sour")) glass = "coupe", abv=20;
+        else if (en.includes("B-52")) glass = "shot", abv=26;
+
+        let ings = [`${base} 45ml`];
+        let steps = [`将材料放入容器`];
+
+        if (glass === "rocks") {
+            ings.push("大号方冰", "芳香苦精"); steps = [`杯底放入大方冰块`, `倒入${base}`, `滴入苦精并平稳搅拌`, `饰以橙皮精油`];
+        } else if (glass === "highball") {
+            ings.push("新鲜果汁 15ml", "苏打水或软饮 补满"); steps = [`杯中加满冰块`, `倒入${base}与果汁`, `补满苏打水并轻柔搅拌`, `饰以水果切片`];
+        } else if (glass === "martini" || glass === "coupe") {
+            ings.push("风味糖浆 10ml", "新鲜柑橘汁 15ml"); steps = [`摇壶中加入大量冰块`, `倒入${base}与辅助果汁`, `剧烈摇晃至壶身起霜`, `双重过滤入冰镇酒杯`, `加入专属点缀物`];
+        } else if (glass === "flute") {
+            ings.push("冰镇起泡酒 补满"); steps = [`香槟杯中先加入基底风味`, `倾斜杯身缓慢补满起泡酒`, `吧勺轻柔提拉混合`];
+        } else if (glass === "shot") {
+            ings = ["咖啡利口酒", "百利甜酒", "柑曼怡"]; steps = ["底层注入咖啡利口酒", "沿吧勺背缓慢注入百利甜", "顶层注入柑曼怡", "点燃蓝火焰"];
+        }
+
+        if(en === "Mojito") { ings = ["白朗姆酒 50ml", "新鲜青柠", "薄荷叶", "苏打水"]; steps = ["杯底放入青柠与白糖并捣压", "放入薄荷叶轻拍", "倒入朗姆酒并加碎冰", "补满苏打水并搅拌"]; glass = "highball"; abv=10;}
+        else if(en === "Old Fashioned") { ings = ["波本威士忌 60ml", "方糖 1块", "苦精 3滴"]; steps = ["杯底放入方糖与苦精", "使用吧勺将糖捣碎", "放入大冰块", "倒入波本威士忌", "平稳搅拌至冷却", "擦拭橙皮并饰于杯沿"]; glass = "rocks"; abv=32; }
+
+        return { glass, abv, ingredients: ings, steps, flavors: genFlavor(base, ings.some(i=>i.includes('汁'))) };
+    }
+
+    const cocktailDB = Array.from({length: 100}, (_, i) => {
+        const recipe = generateRecipe(namesZH[i], namesEN[i], bases[i]);
+        return { 
+            id: String(i+1), zh: namesZH[i], en: namesEN[i], base: bases[i], 
+            glass: recipe.glass, abv: recipe.abv, ingredients: recipe.ingredients, steps: recipe.steps, flavors: recipe.flavors,
+            palette: generatePalette(i+1),
+            reqCats: recipe.ingredients.reduce((acc, ing) => {
+                cabinetItems.forEach(cat => { if(cat.kw.some(k => ing.includes(k))) acc.add(cat.name); });
+                return acc;
+            }, new Set())
+        };
+    });
+
+    function formatVol(text) {
+        if(!isOz) return text;
+        return text.replace(/(\d+)\s*ml/gi, (m, val) => { let oz = parseFloat(val) / 30; return oz.toFixed(1) + ' oz'; });
+    }
+
+    function getRadarSvg(flavors) {
+        const rMax = 35;
+        const pts = flavors.map((f, i) => { const angle = (Math.PI / 2) - (2 * Math.PI * i / 5); return `${50 + (f/100)*rMax*Math.cos(angle)},${50 - (f/100)*rMax*Math.sin(angle)}`; }).join(' ');
+        let bgWeb = [100, 75, 50, 25].map(p => {
+            let str = Array.from({length:5}).map((_,i)=>{ const angle = (Math.PI / 2) - (2 * Math.PI * i / 5); return `${50 + (p/100)*rMax*Math.cos(angle)},${50 - (p/100)*rMax*Math.sin(angle)}`; }).join(' ');
+            return `<polygon points="${str}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>`;
+        }).join('');
+        let axes = Array.from({length:5}).map((_,i)=>{ const angle = (Math.PI / 2) - (2 * Math.PI * i / 5); return `<line x1="50" y1="50" x2="${50+rMax*Math.cos(angle)}" y2="${50-rMax*Math.sin(angle)}" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>`; }).join('');
+        let texts = ['酸', '甜', '苦', '烈', '果香'].map((l,i)=>{ const angle = (Math.PI / 2) - (2 * Math.PI * i / 5); return `<text x="${50+44*Math.cos(angle)}" y="${50-44*Math.sin(angle)+2}" fill="white" font-size="8" font-weight="bold" text-anchor="middle" dominant-baseline="middle" opacity="0.7">${l}</text>`; }).join('');
+        return `<svg viewBox="0 0 100 100" class="w-full h-full">${bgWeb}${axes}<polygon points="${pts}" fill="white" opacity="0.4" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>${texts}</svg>`;
+    }
+
+    function renderStepSvg(drink, text, idx) {
+        let glassPath = '', clip = '';
+        if(drink.glass==='martini'){ glassPath=`M 8 15 L 32 42 L 56 15 Z M 32 42 L 32 58 M 22 58 L 42 58`; clip=`M 8 15 L 32 42 L 56 15 Z`; }
+        else if(drink.glass==='rocks'){ glassPath=`M 20 22 L 24 56 L 40 56 L 44 22`; clip=`M 20 22 L 24 56 L 40 56 L 44 22 Z`; }
+        else if(drink.glass==='highball'){ glassPath=`M 22 10 L 22 56 L 42 56 L 42 10`; clip=`M 22 10 L 22 56 L 42 56 L 42 10 Z`; }
+        else if(drink.glass==='shot'){ glassPath=`M 26 38 L 28 56 L 36 56 L 38 38`; clip=`M 26 38 L 28 56 L 36 56 L 38 38 Z`; }
+        else if(drink.glass==='flute'){ glassPath=`M 28 10 L 28 40 C 28 50, 36 50, 36 40 L 36 10 M 32 45 L 32 58 M 24 58 L 40 58`; clip=`M 28 10 L 28 40 C 28 50, 36 50, 36 40 L 36 10 Z`; }
+        else { glassPath=`M 12 18 C 12 40, 52 40, 52 18 M 32 35 L 32 58 M 22 58 L 42 58`; clip=`M 12 18 C 12 40, 52 40, 52 18 Z`; } 
+
+        let active = '';
+        if(/方糖|白糖|糖块/.test(text)){ active = `<rect x="28" y="48" width="8" height="8" fill="#FFF176" class="anim-item-fall" style="filter:drop-shadow(0 2px 2px rgba(0,0,0,0.5))"/>`; } 
+        else if(/摇晃|狂摇/.test(text)){ return `<svg viewBox="0 0 64 64" class="w-full h-full"><rect x="22" y="15" width="20" height="34" rx="6" fill="none" stroke="white" stroke-width="2.5" class="anim-shaker"/></svg>`; } 
+        else if(/倒|注|入|补满|加满/.test(text)){ active = `<g transform="translate(42,0) rotate(-40)"><rect x="0" y="0" width="12" height="30" fill="#111" rx="2" stroke="#444" stroke-width="1"/><rect x="3" y="-12" width="6" height="15" fill="#ccc"/><path d="M 6 5 L 6 45" stroke="white" stroke-width="2.5" class="anim-pour-line"/></g><ellipse cx="32" cy="48" rx="8" ry="2" fill="white" opacity="0.3" class="anim-ripple"/>`; } 
+        else if(/苦精/.test(text)){ active = `<g transform="translate(40,5) rotate(-45)"><rect x="0" y="0" width="6" height="16" fill="#1a1a1a" rx="1"/><circle cx="3" cy="24" r="2" fill="#5D2906" class="anim-item-fall"/></g>`; } 
+        else if(/捣|压/.test(text)){ active = `<rect x="30" y="5" width="4" height="45" fill="#ddd" rx="2" class="anim-muddler"/>`; } 
+        else if(/搅拌/.test(text)){ active = `<line x1="38" y1="5" x2="26" y2="52" stroke="white" stroke-width="2.5" class="anim-stir"/>`; } 
+        else if(/橄榄/.test(text)){ active = `<g class="anim-item-fall"><circle cx="48" cy="15" r="4" fill="#808000"/><line x1="55" y1="8" x2="40" y2="23" stroke="white" stroke-width="1.5"/></g>`; } 
+        else if(/樱桃/.test(text)){ active = `<circle cx="32" cy="45" r="3.5" fill="#D32F2F" class="anim-item-fall"/>`; } 
+        else if(/冰/.test(text)){ active = `<g class="anim-item-fall"><rect x="25" y="40" width="10" height="10" rx="1" fill="none" stroke="white" stroke-width="2"/><rect x="30" y="30" width="8" height="8" rx="1" fill="none" stroke="white" stroke-width="2"/></g>`; } 
+        else if(/皮|薄荷|饰|叶|柠檬|青柠/.test(text)){ active = `<path d="M 30 10 Q 35 5, 40 10 Q 35 15, 30 10 Z" fill="#81C784" class="anim-item-fall"/>`; } 
+        else if(/火|燃/.test(text)){ active = `<path d="M 32 30 Q 35 20, 32 10 Q 29 20, 32 30" fill="#FF5722" class="animate-pulse"/>`; }
+
+        let level = Math.min(idx * (50/drink.steps.length), 45);
+        return `<svg viewBox="0 0 64 64" class="w-full h-full"><defs><clipPath id="c_${drink.id}"><path d="${clip}"/></clipPath></defs><rect x="0" y="${60-level}" width="64" height="64" fill="white" opacity="0.3" clip-path="url(#c_${drink.id})"/><path d="${glassPath}" fill="none" stroke="white" stroke-width="2.5" opacity="0.6" stroke-linecap="round"/>${active}</svg>`;
+    }
+
+    // --- 全新丝滑页面路由引擎 (JS + Inline CSS) ---
+    function switchPage(pageId, el, filter=null, direction='fade') {
+        if(animTimer) clearInterval(animTimer);
+        const content = document.getElementById('appContent');
+        
+        // 1. 设置出场动画
+        content.style.transition = 'all 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
+        content.style.opacity = '0';
+        if(direction === 'forward') content.style.transform = 'translateX(-30px)';
+        else if(direction === 'backward') content.style.transform = 'translateX(30px)';
+        else content.style.transform = 'scale(0.97)';
+        
+        setTimeout(() => {
+            // 2. 挂载新内容
+            if(pageId==='recipes') renderList(filter);
+            else if(pageId==='cabinet') renderCabinet();
+            else if(pageId==='randomizer') renderShuffle();
+            else if(pageId==='search') renderSearch();
+            else if(pageId==='profile') renderProfile();
+            
+            // 3. 准备入场位置 (关闭过渡)
+            content.style.transition = 'none';
+            if(direction === 'forward') content.style.transform = 'translateX(40px)';
+            else if(direction === 'backward') content.style.transform = 'translateX(-40px)';
+            else content.style.transform = 'scale(1.02)';
+            
+            // 强制重绘，打破浏览器的渲染合并
+            void content.offsetWidth; 
+            
+            // 4. 执行入场动画
+            content.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
+            content.style.opacity = '1';
+            content.style.transform = 'translateX(0) scale(1)';
+            content.scrollTop = 0;
+        }, 250); // 与出场时间匹配
+
+        // Tab 高亮逻辑
+        if(el) { 
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active')); 
+            el.classList.add('active'); 
+        }
+    }
+
+    // --- 页面渲染器 ---
+    function renderList(f=null) {
+        const list = f ? cocktailDB.filter(d => d.base.includes(f) || d.zh.includes(f)) : cocktailDB;
+        let html = `<div class="large-title">${f||'为您甄选'}</div>`;
+        if(f) html += `<div class="px-6 mb-4"><div onclick="switchPage('search', document.getElementById('tab-search'), null, 'backward')" class="inline-block bg-white/10 px-4 py-2 rounded-full text-sm font-bold text-white shadow-md cursor-pointer active:scale-90 active:opacity-70 transition-all duration-200">‹ 返回浏览类别</div></div>`;
+        html += `<div class="grid grid-cols-2 gap-4 px-6 mt-2 pb-40">`;
+        list.forEach((d, i) => { 
+            html += `<div class="cover-card stagger-item liquid-bg shadow-2xl" style="--bg-grad:${d.palette}; animation-delay: ${i*0.05}s" onclick="openDetail('${d.id}')"><div class="cover-label font-bold"><div class="text-[14px]">${d.zh}</div><div class="text-[9px] opacity-60 truncate mt-0.5">${d.en}</div></div></div>`; 
+        });
+        document.getElementById('appContent').innerHTML = html + `</div>`;
+    }
+
+    function renderCabinet() {
+        let html = `<div class="large-title">我的酒柜</div><div class="px-6 mb-4 text-ios-gray text-sm font-medium">点选现有的材料，看看能调什么。</div>`;
+        html += `<div class="px-6 flex flex-wrap gap-2 mb-8">`;
+        cabinetItems.forEach(item => {
+            const isSel = myCabinet.includes(item.name);
+            html += `<div class="ing-tag ${isSel?'selected':''}" onclick="toggleCabinetItem('${item.name}')">${item.name}</div>`;
+        });
+        html += `</div>`;
+
+        let perfect = [], missing1 = [];
+        cocktailDB.forEach(d => {
+            let reqArr = Array.from(d.reqCats); if(reqArr.length === 0) return;
+            let missingCount = reqArr.filter(c => !myCabinet.includes(c)).length;
+            if(missingCount === 0) perfect.push(d); else if(missingCount === 1) missing1.push(d);
+        });
+
+        html += `<div class="px-6">`;
+        if(perfect.length > 0) {
+            html += `<div class="text-white font-bold text-lg mb-3">✨ 马上能调 (${perfect.length})</div><div class="grid grid-cols-2 gap-4 mb-8">`;
+            perfect.forEach((d,i) => { html += `<div class="cover-card stagger-item liquid-bg shadow-lg" style="--bg-grad:${d.palette}; animation-delay: ${i*0.04}s" onclick="openDetail('${d.id}')"><div class="cover-label font-bold"><div class="text-sm">${d.zh}</div></div></div>`; });
+            html += `</div>`;
+        }
+        if(missing1.length > 0) {
+            html += `<div class="text-white/60 font-bold text-lg mb-3">🛒 差1种材料 (${missing1.length})</div><div class="grid grid-cols-2 gap-4 pb-40">`;
+            missing1.slice(0,10).forEach((d,i) => { html += `<div class="cover-card stagger-item liquid-bg opacity-70" style="--bg-grad:${d.palette}; animation-delay: ${i*0.04}s" onclick="openDetail('${d.id}')"><div class="cover-label font-bold"><div class="text-sm">${d.zh}</div></div></div>`; });
+            html += `</div>`;
+        }
+        if(perfect.length === 0 && missing1.length === 0) html += `<div class="text-center text-ios-gray mt-10">多选几样材料试试吧</div>`;
+        html += `</div>`;
+        document.getElementById('appContent').innerHTML = html;
+    }
+    window.toggleCabinetItem = (name) => { if(myCabinet.includes(name)) myCabinet = myCabinet.filter(n => n!==name); else myCabinet.push(name); renderCabinet(); };
+
+    function renderShuffle() {
+        document.getElementById('appContent').innerHTML = `<div class="large-title">抽选发现</div><div class="flex flex-col items-center justify-center h-[550px] px-10 text-center">
+            <div class="w-[180px] h-[180px] rounded-[45px] bg-gradient-to-br from-ios-red to-purple-700 flex flex-col items-center justify-center shadow-[0_20px_50px_rgba(250,45,72,0.4)] border-[6px] border-white/10 active:scale-[0.85] transition-all duration-300 cursor-pointer" onclick="goLucky()"><span class="text-6xl mb-2">🎲</span><span class="text-[11px] font-black tracking-[0.2em] text-white">SHUFFLE</span></div>
+            <div class="mt-14"><div class="text-2xl font-black text-white mb-2">随机惊喜</div><div class="text-ios-gray font-medium">点按按钮，发现下一杯挚爱。</div></div></div>`;
+    }
+    function goLucky() { showMsg('寻找中...'); setTimeout(()=>openDetail(cocktailDB[Math.floor(Math.random()*100)].id), 600); }
+
+    function renderSearch() {
+        const cats = [{n:'琴酒', c:'#ff6b6b'}, {n:'威士忌', c:'#f39c12'}, {n:'朗姆酒', c:'#27ae60'}, {n:'伏特加', c:'#3498db'}, {n:'龙舌兰', c:'#9b59b6'}, {n:'白兰地', c:'#e67e22'}];
+        document.getElementById('appContent').innerHTML = `<div class="large-title">搜索</div><div class="px-6 mt-2">
+            <div class="bg-zinc-900 rounded-xl p-3 flex items-center mb-8 border border-white/5 focus-within:border-ios-blue focus-within:shadow-[0_0_15px_rgba(0,122,255,0.3)] transition-all duration-300">
+                <span class="mr-2 opacity-40">🔍</span><input type="text" oninput="liveSearch(this.value)" placeholder="酒名、基酒或风味" class="bg-transparent outline-none w-full text-white text-sm">
+            </div>
+            <div class="text-xl font-bold text-white mb-4">浏览类别</div>
+            <div id="searchGrid" class="grid grid-cols-2 gap-3 pb-40">${cats.map((c,i) => `<div class="category-tile stagger-item" style="background:${c.c}; animation-delay: ${i*0.05}s" onclick="switchPage('recipes', null, '${c.n}', 'forward')"><span class="absolute top-3 left-3 font-bold text-white text-lg">${c.n}</span></div>`).join('')}</div>
+        </div>`;
+    }
+    window.liveSearch = (val) => {
+        const grid = document.getElementById('searchGrid'); 
+        if(!val) { 
+            // 恢复分类网格 (无延迟直接刷新避免闪烁)
+            const cats = [{n:'琴酒', c:'#ff6b6b'}, {n:'威士忌', c:'#f39c12'}, {n:'朗姆酒', c:'#27ae60'}, {n:'伏特加', c:'#3498db'}, {n:'龙舌兰', c:'#9b59b6'}, {n:'白兰地', c:'#e67e22'}];
+            grid.innerHTML = cats.map((c,i) => `<div class="category-tile stagger-item" style="background:${c.c}; animation-delay: ${i*0.05}s" onclick="switchPage('recipes', null, '${c.n}', 'forward')"><span class="absolute top-3 left-3 font-bold text-white text-lg">${c.n}</span></div>`).join('');
+            return; 
+        }
+        const filtered = cocktailDB.filter(d => d.zh.includes(val) || d.en.toLowerCase().includes(val.toLowerCase()));
+        grid.innerHTML = filtered.slice(0, 10).map((d,i) => `<div class="bg-ios-darkCard p-4 mb-2 flex items-center gap-4 rounded-xl cursor-pointer active:scale-[0.98] transition-transform duration-300 stagger-item" style="animation-delay: ${i*0.03}s" onclick="openDetail('${d.id}')"><div class="w-10 h-10 rounded-md liquid-bg flex-shrink-0" style="--bg-grad:${d.palette}"></div><div class="font-bold text-white truncate">${d.zh}</div></div>`).join('');
+    };
+
+    function renderProfile() {
+        let fs = cocktailDB.filter(d => favoritedIds.includes(d.id));
+        let html = `<div class="large-title">我的</div>
+            <div class="px-6 mb-8">
+                <div class="bg-white/10 rounded-[20px] p-4 flex justify-between items-center border border-white/5 shadow-md">
+                    <span class="font-bold text-white">配方容量单位</span>
+                    <div class="relative flex bg-black/50 rounded-full p-1 cursor-pointer w-[90px] h-[32px] active:scale-95 transition-transform" onclick="toggleUnit()">
+                        <div class="absolute top-1 bottom-1 w-[40px] bg-ios-red rounded-full transition-all duration-300 ease-out" style="left: ${isOz ? '46px' : '4px'}"></div>
+                        <div class="flex-1 flex justify-center items-center z-10 text-[11px] font-black transition-colors ${!isOz ? 'text-white' : 'text-white/50'}">ML</div>
+                        <div class="flex-1 flex justify-center items-center z-10 text-[11px] font-black transition-colors ${isOz ? 'text-white' : 'text-white/50'}">OZ</div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 text-xl font-bold text-white mb-4">我的收藏</div>
+            <div class="grid grid-cols-2 gap-4 px-6 pb-40">`;
+        if(!fs.length) html += `<div class="col-span-2 text-ios-gray">暂无收藏。</div>`;
+        else fs.forEach((d,i) => { html += `<div class="cover-card stagger-item liquid-bg" style="--bg-grad:${d.palette}; animation-delay: ${i*0.05}s" onclick="openDetail('${d.id}')"><div class="cover-label font-bold text-white">${d.zh}</div></div>`; });
+        document.getElementById('appContent').innerHTML = html + `</div>`;
+    }
+
+    window.toggleUnit = () => { isOz = !isOz; document.getElementById('appContent').innerHTML = ''; renderProfile(); showMsg(isOz ? '切换至 盎司(oz)' : '切换至 毫升(ml)'); };
+
+    // --- 详情弹窗与动作系统 ---
+    function openDetail(id) {
+        const d = cocktailDB.find(x => x.id === id); currentDetailId = id;
+        const detail = document.getElementById('recipeDetail');
+        detail.style.setProperty('--bg-grad', d.palette);
+        const isFav = favoritedIds.includes(id);
+        document.getElementById('detailFavBtn').innerText = isFav ? '★' : '☆';
+        document.getElementById('detailFavBtn').style.color = isFav ? 'white' : 'rgba(255,255,255,0.6)';
+
+        document.getElementById('detailContent').innerHTML = `
+            <div class="mt-14 mb-8 text-center drop-shadow-2xl text-white">
+                <div class="text-[44px] font-black leading-tight tracking-tighter">${d.zh}</div>
+                <div class="text-[10px] font-bold opacity-60 uppercase tracking-[0.4em] mt-2">${d.en}</div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-6 text-center text-white">
+                <div class="bg-white/10 backdrop-blur-md p-4 rounded-[24px] border border-white/10 flex flex-col justify-between">
+                    <div class="flex justify-between w-full px-1"><span class="text-[9px] font-black opacity-60 uppercase tracking-widest">ABV</span><span class="text-[9px] font-black opacity-60 uppercase tracking-widest">工艺模拟</span></div>
+                    <div class="flex justify-between items-end w-full px-1 mt-3"><span class="text-3xl font-black">${d.abv}%</span><div id="animationStage" class="w-12 h-12"></div></div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md p-4 rounded-[24px] border border-white/10 flex flex-col items-center justify-center relative">
+                    <div class="absolute top-4 left-4 text-[9px] font-black opacity-60 uppercase tracking-widest">五维风味</div>
+                    <div class="w-20 h-20 mt-4">${getRadarSvg(d.flavors)}</div>
+                </div>
+            </div>
+            <div class="mb-8 text-white"><div class="text-[11px] font-black opacity-50 px-1 mb-3 uppercase tracking-widest">配方清单</div><div class="bg-white/10 backdrop-blur-md p-5 rounded-[24px] space-y-4 border border-white/10">${d.ingredients.map(ing => `<div class="font-bold border-b border-white/5 pb-2"><span>${formatVol(ing)}</span></div>`).join('')}</div></div>
+            <div class="mb-20 text-white"><div class="text-[11px] font-black opacity-50 px-1 mb-3 uppercase tracking-widest">专业工序</div><div class="space-y-3" id="stepList"></div></div>`;
+        
+        d.steps.forEach((s, i) => { document.getElementById('stepList').innerHTML += `<div id="step-item-${i}" class="p-5 bg-white/10 backdrop-blur-md rounded-[24px] border border-transparent transition-all duration-300"><div class="flex items-start"><span class="font-black mr-4 text-2xl opacity-20">${i+1}</span><span class="text-[15px] font-bold leading-relaxed">${s}</span></div></div>`; });
+
+        document.getElementById('mainWrapper').classList.add('content-shrink');
+        document.getElementById('bottomTab').style.transform = 'translateY(120px)';
+        detail.classList.remove('translate-y-full');
+        setTimeout(() => { detail.classList.add('detail-show'); startSim(d); }, 50);
+    }
+
+    function startSim(drink) {
+        if(animTimer) clearInterval(animTimer);
+        let cur = 0;
+        const update = () => {
+            const st = document.getElementById('animationStage'); if(!st) return;
+            st.innerHTML = renderStepSvg(drink, drink.steps[cur], cur);
+            for(let i=0; i<drink.steps.length; i++) {
+                const el = document.getElementById(`step-item-${i}`);
+                if(el) { el.style.borderColor = i===cur ? 'rgba(255,255,255,0.4)' : 'transparent'; el.style.opacity = i===cur ? '1' : '0.4'; el.style.transform = i===cur ? 'scale(1.03)' : 'scale(1)'; }
+            }
+            cur = (cur + 1) % drink.steps.length;
+        };
+        update(); animTimer = setInterval(update, 2400);
+    }
+
+    function closeRecipeDetail() { if(animTimer) clearInterval(animTimer); const detail = document.getElementById('recipeDetail'); detail.classList.remove('detail-show'); detail.classList.add('translate-y-full'); document.getElementById('mainWrapper').classList.remove('content-shrink'); document.getElementById('bottomTab').style.transform = 'translateY(0)'; }
+    function toggleFavorite() { const idx = favoritedIds.indexOf(currentDetailId); if(idx>-1) favoritedIds.splice(idx,1); else favoritedIds.push(currentDetailId); showMsg(idx>-1?'已移出收藏':'已加入收藏'); document.getElementById('detailFavBtn').innerText = favoritedIds.includes(currentDetailId)?'★':'☆'; document.getElementById('detailFavBtn').style.color = favoritedIds.includes(currentDetailId)?'white':'rgba(255,255,255,0.6)'; }
+    function showMsg(m) { const t=document.getElementById('toast'); t.innerText=m; t.classList.remove('hidden'); setTimeout(()=>t.classList.remove('opacity-0'),10); setTimeout(()=>{t.classList.add('opacity-0');setTimeout(()=>t.classList.add('hidden'),300)},1500); t.classList.remove('opacity-0'); }
+
+    // 初始化载入配方页
+    window.onload = () => switchPage('recipes', document.getElementById('tab-recipes'));
 </script>
-
 </body>
 </html>

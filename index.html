@@ -2,63 +2,73 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cocktail Master - Ultimate Interactive Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>Cocktail Master - IBA Professional Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
-                extend: { colors: { ios: { red: '#FA2D48', blue: '#007AFF', gray: '#8E8E93', darkBg: '#000000' } } }
+                extend: { colors: { ios: { red: '#FA2D48', blue: '#0A84FF', gray: '#8E8E93', darkBg: '#000000', surface: '#1C1C1E' } } }
             }
         }
     </script>
     <style>
-        body { background-color: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
-        .iphone { width: 375px; height: 780px; border-radius: 50px; border: 12px solid #1a1a1a; box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.8); position: relative; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.6s cubic-bezier(0.32, 0.72, 0, 1); background: #000; }
+        body { background-color: #000; margin: 0; padding: 0; width: 100vw; height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
         
-        /* 页面级过渡容器 */
+        /* 移除假手机壳限制，100%撑满真实设备 */
+        .iphone { width: 100%; height: 100%; position: relative; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.6s cubic-bezier(0.32, 0.72, 0, 1); background: #000; border: none; border-radius: 0; box-shadow: none; }
+        
         .content-wrap { flex: 1; display: flex; flex-direction: column; height: 100%; transition: all 0.6s cubic-bezier(0.32, 0.72, 0, 1); position: relative; overflow: hidden; }
         .content-shrink { transform: scale(0.92); border-radius: 40px; opacity: 0.6; pointer-events: none; }
         
-        /* App 内容区，交由 JS 控制过渡 */
-        .content { flex: 1; overflow-y: auto; scroll-behavior: smooth; width: 100%; height: 100%; padding-bottom: 90px; }
+        /* 动态适配底部小白条 */
+        .content { flex: 1; overflow-y: auto; scroll-behavior: smooth; width: 100%; height: 100%; padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)); }
         .content::-webkit-scrollbar { width: 0; }
 
         .glass-pill { backdrop-filter: saturate(210%) blur(30px); background: rgba(35, 35, 38, 0.85); border: 0.5px solid rgba(255, 255, 255, 0.1); }
-        .tab-bar-container { position: absolute; bottom: 24px; left: 0; right: 0; display: flex; justify-content: center; padding: 0 16px; z-index: 100; transition: transform 0.5s; }
-        .tab-bar-pill { height: 68px; width: 100%; border-radius: 34px; display: flex; padding: 0 8px; align-items: center; }
-        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #8E8E93; cursor: pointer; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); font-weight: 600; transform-origin: bottom; }
-        .tab-item:active { transform: scale(0.85) translateY(2px); opacity: 0.7; }
-        .tab-item.active { color: white; transform: scale(1.15) translateY(-2px); }
+        
+        /* 原生 PWA 底部沉浸式 TabBar (避开小白条) */
+        .tab-bar-container { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; align-items: center; z-index: 100; transition: transform 0.5s; padding-bottom: env(safe-area-inset-bottom, 12px); height: calc(65px + env(safe-area-inset-bottom, 12px)); backdrop-filter: saturate(200%) blur(30px); -webkit-backdrop-filter: saturate(200%) blur(30px); background: rgba(28, 28, 30, 0.85); border-top: 0.5px solid rgba(255, 255, 255, 0.15); }
+        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #8E8E93; cursor: pointer; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); font-weight: 500; transform-origin: center; height: 100%; padding-top: 8px; }
+        .tab-item:active { transform: scale(0.9); opacity: 0.7; }
+        .tab-item.active { color: #FA2D48; transform: scale(1.05); font-weight: 700; }
+        .tab-item svg { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); color: inherit; }
 
         @keyframes fluid-rotate { from { transform: translate(-10%, -10%) rotate(0deg); } to { transform: translate(10%, 10%) rotate(360deg); } }
         .liquid-bg { position: relative; overflow: hidden; background: #111; }
-        .liquid-bg::before { content: ''; position: absolute; top: -75%; left: -75%; width: 250%; height: 250%; background: var(--bg-grad); filter: blur(55px); animation: fluid-rotate 25s infinite linear; opacity: 0.85; z-index: 0; }
+        .liquid-bg::before { content: ''; position: absolute; top: -75%; left: -75%; width: 250%; height: 250%; background: var(--bg-grad); filter: blur(60px); animation: fluid-rotate 25s infinite linear; opacity: 0.85; z-index: 0; }
 
-        .cover-card { aspect-ratio: 1 / 1; border-radius: 18px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; }
-        .cover-card:active { transform: scale(0.92); box-shadow: 0 4px 15px rgba(0,0,0,0.4); filter: brightness(0.9); }
-        .cover-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; z-index: 10; }
+        /* 苹果风柔和卡片 */
+        .cover-card { aspect-ratio: 1 / 1; border-radius: 20px; position: relative; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.3); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; }
+        .cover-card:active { transform: scale(0.94); box-shadow: 0 4px 12px rgba(0,0,0,0.4); filter: brightness(0.9); }
+        .cover-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 14px; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); color: white; z-index: 10; text-shadow: 0 1px 4px rgba(0,0,0,0.3); }
         
-        .category-tile { aspect-ratio: 1.8 / 1; border-radius: 14px; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transform-origin: center; }
-        .category-tile:active { transform: scale(0.9); filter: brightness(0.7); }
+        .category-tile { aspect-ratio: 1.8 / 1; border-radius: 14px; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.25); transform-origin: center; }
+        .category-tile:active { transform: scale(0.93); filter: brightness(0.8); }
 
-        #recipeDetail { transition: transform 0.6s cubic-bezier(0.32, 0.72, 0, 1); will-change: transform; }
+        /* 统一的页面标题 */
+        .large-title { font-size: 34px; font-weight: 800; padding: 70px 24px 12px 24px; letter-spacing: -1px; color: white; }
+
+        #recipeDetail { transition: transform 0.55s cubic-bezier(0.32, 0.72, 0, 1); will-change: transform; }
         .detail-show .detail-inner { opacity: 1; transform: translateY(0); }
-        .detail-inner { transition: all 0.4s ease 0.1s; opacity: 0; transform: translateY(25px); }
+        .detail-inner { transition: all 0.4s ease 0.1s; opacity: 0; transform: translateY(20px); }
 
-        .ing-tag { border: 1px solid rgba(255,255,255,0.2); color: #8E8E93; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); background: rgba(255,255,255,0.05); }
-        .ing-tag:active { transform: scale(0.9); }
-        .ing-tag.selected { background: #FA2D48; color: white; border-color: #FA2D48; transform: scale(1.05); box-shadow: 0 4px 15px rgba(250,45,72,0.5); }
+        .ing-tag { border: 1px solid rgba(255,255,255,0.15); color: #8E8E93; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); background: rgba(255,255,255,0.05); }
+        .ing-tag:active { transform: scale(0.92); }
+        .ing-tag.selected { background: #FA2D48; color: white; border-color: #FA2D48; transform: scale(1.05); box-shadow: 0 4px 12px rgba(250,45,72,0.4); font-weight: 600; }
 
-        @keyframes stagger-fade-in { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .stagger-item { opacity: 0; animation: stagger-fade-in 0.5s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+        @keyframes stagger-fade-in { from { opacity: 0; transform: translateY(15px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .stagger-item { opacity: 0; animation: stagger-fade-in 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
 
         @keyframes pour-action { 0% { stroke-dashoffset: 40; } 100% { stroke-dashoffset: 0; } }
         @keyframes muddle-action { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
         @keyframes shake-action { 0%, 100% { transform: rotate(0) scale(1); } 25% { transform: rotate(10deg) scale(1.05); } 75% { transform: rotate(-10deg) scale(0.95); } }
         @keyframes item-fall { 0% { transform: translateY(-100px) rotate(-30deg); opacity: 0; } 60% { opacity: 1; } 100% { transform: translateY(0) rotate(10deg); opacity: 1; } }
-        @keyframes surface-ripple { 0% { transform: scaleX(0.7) scaleY(0.7); opacity: 0.6; } 100% { transform: scaleX(1.3) scaleY(1.3); opacity: 0; } }
+        @keyframes surface-ripple { 0% { transform: scaleX(0.8) scaleY(0.8); opacity: 0.6; } 100% { transform: scaleX(1.3) scaleY(1.3); opacity: 0; } }
         @keyframes spin-stir { 0% { transform: scaleX(1); } 50% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
 
         .anim-pour-line { stroke-dasharray: 8 8; animation: pour-action 0.3s infinite linear; }
@@ -72,9 +82,33 @@
 <body class="dark">
 
 <div class="iphone dark bg-ios-darkBg" id="appRoot">
-    <div class="absolute top-0 w-full h-11 flex justify-between items-center px-8 z-[110] text-[12px] font-bold text-white pointer-events-none">
-        <span>9:41</span>
-        <div class="flex space-x-1.5 items-center"><span>📶</span><span>🔋</span></div>
+    <div class="content-wrap" id="mainWrapper"><div class="content" id="appContent"></div></div>
+
+    <!-- 沉浸式详情层 -->
+    <div id="recipeDetail" class="absolute inset-0 z-[120] transform translate-y-full flex flex-col overflow-hidden liquid-bg">
+        <!-- 动态适配顶部刘海/灵动岛 -->
+        <div class="h-12 flex items-center justify-between px-6 relative z-20 text-white" style="margin-top: calc(12px + env(safe-area-inset-top, 24px));">
+            <button onclick="closeRecipeDetail()" class="w-10 h-10 flex items-center justify-center bg-black/40 backdrop-blur-xl rounded-full text-xl hover:rotate-90 active:scale-75 transition-all duration-300">✕</button>
+            <button id="detailFavBtn" class="text-3xl active:scale-125 transition-transform" onclick="toggleFavorite()">☆</button>
+        </div>
+        <div class="flex-1 overflow-y-auto px-6 pb-48 relative z-10 text-white detail-inner" id="detailContent"></div>
+        <!-- 动态适配底部小白条 -->
+        <div class="absolute left-0 right-0 px-8 z-20" style="bottom: calc(20px + env(safe-area-inset-bottom, 10px));">
+            <button onclick="closeRecipeDetail()" class="glass-pill w-full py-4 rounded-full font-extrabold text-white shadow-2xl active:scale-95 transition-all">完成</button>
+        </div>
+    </div>
+
+    <!-- 底部 Tab 栏 -->
+    <div class="tab-bar-container" id="bottomTab">
+        <div class="tab-item active" id="tab-recipes" onclick="switchPage('recipes', this)"><div class="w-7 h-7 mb-0.5"><svg viewBox="0 0 32 32" class="fill-current"><rect x="5" y="5" width="9" height="9" rx="2.5"/><rect x="18" y="5" width="9" height="9" rx="2.5"/><rect x="5" y="18" width="9" height="9" rx="2.5"/><rect x="18" y="18" width="9" height="9" rx="2.5"/></svg></div><span>配方</span></div>
+        <div class="tab-item" id="tab-cabinet" onclick="switchPage('cabinet', this)"><div class="w-7 h-7 mb-0.5"><svg viewBox="0 0 32 32" class="fill-current"><path d="M6 6h20v4H6zM8 12h16v14H8zM14 16h4v2h-4z"/></svg></div><span>酒柜</span></div>
+        <div class="tab-item" id="tab-randomizer" onclick="switchPage('randomizer', this)"><div class="w-7 h-7 mb-0.5"><svg viewBox="0 0 32 32" class="fill-current"><path d="M4 22h4.5l6-12H21l-4.5 4.5 2.1 2.1 8.1-8.1-8.1-8.1-2.1 2.1 4.5 4.5h-7.5l-6 12H4v3zM21 18l-1.5 1.5 3 3H4v3h18.5l-3 3 1.5 1.5 5.5-5.5L21 18z"/></svg></div><span>抽选</span></div>
+        <div class="tab-item" id="tab-search" onclick="switchPage('search', this)"><div class="w-7 h-7 mb-0.5"><svg viewBox="0 0 32 32" class="fill-current"><path d="M22.5 20h-1.32l-.46-.45c1.64-1.9 2.63-4.36 2.63-7.05 0-6.08-4.92-11-11-11s-11 4.92-11 11 4.92 11 11 11c2.69 0 5.15-.99 7.05-2.63l.45.46v1.32l8.35 8.35L29 28.35 22.5 20zm-10.15 0c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg></div><span>搜索</span></div>
+        <div class="w-[0.5px] h-8 bg-white/10 mx-1"></div>
+        <div class="tab-item" id="tab-profile" onclick="switchPage('profile', this)"><svg viewBox="0 0 32 32" class="w-6 h-6 fill-current"><path d="M22 6h-12c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-14c0-1.1-.9-2-2-2zm-8 16c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z"/><circle cx="16" cy="16" r="2.5"/></svg></div>
+    </div>
+    <div id="toast" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-2xl text-white px-8 py-4 rounded-3xl z-[200] hidden transition-all opacity-0 font-bold text-center shadow-2xl"></div>
+</div>
     </div>
 
     <!-- 包装整个页面的容器，JS 控制切换动画 -->
@@ -85,27 +119,25 @@
     <!-- 沉浸式详情层 -->
     <div id="recipeDetail" class="absolute inset-0 z-[120] transform translate-y-full flex flex-col overflow-hidden liquid-bg">
         <div class="h-12 flex items-center justify-between px-6 mt-12 relative z-20 text-white">
-            <button onclick="closeRecipeDetail()" class="w-10 h-10 flex items-center justify-center bg-black/40 backdrop-blur-xl rounded-full text-xl hover:rotate-90 active:scale-75 transition-all duration-300">✕</button>
+            <button onclick="closeRecipeDetail()" class="w-10 h-10 flex items-center justify-center bg-black/30 backdrop-blur-xl rounded-full text-xl hover:rotate-90 active:scale-75 transition-all duration-300">✕</button>
             <button id="detailFavBtn" class="text-3xl active:scale-150 transition-all duration-300" onclick="toggleFavorite()">☆</button>
         </div>
         <div class="flex-1 overflow-y-auto px-6 pb-48 relative z-10 text-white detail-inner" id="detailContent"></div>
         <div class="absolute bottom-10 left-0 right-0 px-8 z-20">
-            <button onclick="closeRecipeDetail()" class="glass-pill w-full py-4 rounded-full font-extrabold text-white shadow-2xl hover:brightness-110 active:scale-95 transition-all duration-300">完成</button>
+            <!-- 毛玻璃返回按钮 -->
+            <button onclick="closeRecipeDetail()" class="w-full py-4 rounded-full font-bold text-white shadow-lg active:scale-[0.98] transition-all duration-300" style="background: rgba(40,40,40,0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);">完成</button>
         </div>
     </div>
 
-    <!-- 底部 Tab 栏 -->
+    <!-- 底部 Tab 栏 (原生 iOS 贴底排版) -->
     <div class="tab-bar-container" id="bottomTab">
-        <div class="tab-bar-pill glass-pill">
-            <div class="tab-item active" id="tab-recipes" onclick="switchPage('recipes', this)"><div class="w-7 h-7 mb-0.5"><svg viewBox="0 0 32 32" class="fill-current"><rect x="5" y="5" width="9" height="9" rx="2.5"/><rect x="18" y="5" width="9" height="9" rx="2.5"/><rect x="5" y="18" width="9" height="9" rx="2.5"/><rect x="18" y="18" width="9" height="9" rx="2.5"/></svg></div><span>配方</span></div>
-            <div class="tab-item" id="tab-cabinet" onclick="switchPage('cabinet', this)"><div class="w-7 h-7 mb-0.5"><svg viewBox="0 0 32 32" class="fill-current"><path d="M6 6h20v4H6zM8 12h16v14H8zM14 16h4v2h-4z"/></svg></div><span>酒柜</span></div>
-            <div class="tab-item" id="tab-randomizer" onclick="switchPage('randomizer', this)"><div class="w-7 h-7 mb-0.5"><svg viewBox="0 0 32 32" class="fill-current"><path d="M4 22h4.5l6-12H21l-4.5 4.5 2.1 2.1 8.1-8.1-8.1-8.1-2.1 2.1 4.5 4.5h-7.5l-6 12H4v3zM21 18l-1.5 1.5 3 3H4v3h18.5l-3 3 1.5 1.5 5.5-5.5L21 18z"/></svg></div><span>抽选</span></div>
-            <div class="tab-item" id="tab-search" onclick="switchPage('search', this)"><div class="w-7 h-7 mb-0.5"><svg viewBox="0 0 32 32" class="fill-current"><path d="M22.5 20h-1.32l-.46-.45c1.64-1.9 2.63-4.36 2.63-7.05 0-6.08-4.92-11-11-11s-11 4.92-11 11 4.92 11 11 11c2.69 0 5.15-.99 7.05-2.63l.45.46v1.32l8.35 8.35L29 28.35 22.5 20zm-10.15 0c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg></div><span>搜索</span></div>
-            <div class="w-[0.5px] h-8 bg-white/10 mx-1"></div>
-            <div class="tab-item" id="tab-profile" onclick="switchPage('profile', this)"><svg viewBox="0 0 32 32" class="w-6 h-6 fill-current"><path d="M22 6h-12c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-14c0-1.1-.9-2-2-2zm-8 16c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z"/><circle cx="16" cy="16" r="2.5"/></svg></div>
-        </div>
+        <div class="tab-item active" id="tab-recipes" onclick="switchPage('recipes', this)"><div class="w-[24px] h-[24px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><rect x="5" y="5" width="9" height="9" rx="2.5"/><rect x="18" y="5" width="9" height="9" rx="2.5"/><rect x="5" y="18" width="9" height="9" rx="2.5"/><rect x="18" y="18" width="9" height="9" rx="2.5"/></svg></div><span>配方</span></div>
+        <div class="tab-item" id="tab-cabinet" onclick="switchPage('cabinet', this)"><div class="w-[24px] h-[24px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><path d="M6 6h20v4H6zM8 12h16v14H8zM14 16h4v2h-4z"/></svg></div><span>酒柜</span></div>
+        <div class="tab-item" id="tab-randomizer" onclick="switchPage('randomizer', this)"><div class="w-[24px] h-[24px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><path d="M4 22h4.5l6-12H21l-4.5 4.5 2.1 2.1 8.1-8.1-8.1-8.1-2.1 2.1 4.5 4.5h-7.5l-6 12H4v3zM21 18l-1.5 1.5 3 3H4v3h18.5l-3 3 1.5 1.5 5.5-5.5L21 18z"/></svg></div><span>抽选</span></div>
+        <div class="tab-item" id="tab-search" onclick="switchPage('search', this)"><div class="w-[24px] h-[24px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><path d="M22.5 20h-1.32l-.46-.45c1.64-1.9 2.63-4.36 2.63-7.05 0-6.08-4.92-11-11-11s-11 4.92-11 11 4.92 11 11 11c2.69 0 5.15-.99 7.05-2.63l.45.46v1.32l8.35 8.35L29 28.35 22.5 20zm-10.15 0c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg></div><span>搜索</span></div>
+        <div class="tab-item" id="tab-profile" onclick="switchPage('profile', this)"><div class="w-[24px] h-[24px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><path d="M22 6h-12c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-14c0-1.1-.9-2-2-2zm-8 16c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z"/><circle cx="16" cy="16" r="2.5"/></svg></div><span>我的</span></div>
     </div>
-    <div id="toast" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-2xl text-white px-8 py-4 rounded-3xl z-[200] hidden transition-all opacity-0 font-bold text-center shadow-2xl"></div>
+    <div id="toast" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/90 backdrop-blur-2xl text-white px-8 py-4 rounded-2xl z-[200] hidden transition-all opacity-0 font-medium text-sm text-center shadow-2xl"></div>
 </div>
 
 <script>
@@ -230,7 +262,6 @@
         if(animTimer) clearInterval(animTimer);
         const content = document.getElementById('appContent');
         
-        // 1. 设置出场动画
         content.style.transition = 'all 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
         content.style.opacity = '0';
         if(direction === 'forward') content.style.transform = 'translateX(-30px)';
@@ -238,44 +269,38 @@
         else content.style.transform = 'scale(0.97)';
         
         setTimeout(() => {
-            // 2. 挂载新内容
             if(pageId==='recipes') renderList(filter);
             else if(pageId==='cabinet') renderCabinet();
             else if(pageId==='randomizer') renderShuffle();
             else if(pageId==='search') renderSearch();
             else if(pageId==='profile') renderProfile();
             
-            // 3. 准备入场位置 (关闭过渡)
             content.style.transition = 'none';
             if(direction === 'forward') content.style.transform = 'translateX(40px)';
             else if(direction === 'backward') content.style.transform = 'translateX(-40px)';
             else content.style.transform = 'scale(1.02)';
             
-            // 强制重绘，打破浏览器的渲染合并
             void content.offsetWidth; 
             
-            // 4. 执行入场动画
             content.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
             content.style.opacity = '1';
             content.style.transform = 'translateX(0) scale(1)';
             content.scrollTop = 0;
-        }, 250); // 与出场时间匹配
+        }, 250);
 
-        // Tab 高亮逻辑
         if(el) { 
             document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active')); 
             el.classList.add('active'); 
         }
     }
 
-    // --- 页面渲染器 ---
     function renderList(f=null) {
         const list = f ? cocktailDB.filter(d => d.base.includes(f) || d.zh.includes(f)) : cocktailDB;
         let html = `<div class="large-title">${f||'为您甄选'}</div>`;
-        if(f) html += `<div class="px-6 mb-4"><div onclick="switchPage('search', document.getElementById('tab-search'), null, 'backward')" class="inline-block bg-white/10 px-4 py-2 rounded-full text-sm font-bold text-white shadow-md cursor-pointer active:scale-90 active:opacity-70 transition-all duration-200">‹ 返回浏览类别</div></div>`;
+        if(f) html += `<div class="px-6 mb-4"><div onclick="switchPage('search', document.getElementById('tab-search'), null, 'backward')" class="inline-block bg-white/10 px-4 py-2 rounded-full text-sm font-bold text-white shadow-md cursor-pointer active:scale-90 active:opacity-70 transition-all duration-200">‹ 返回浏览</div></div>`;
         html += `<div class="grid grid-cols-2 gap-4 px-6 mt-2 pb-40">`;
         list.forEach((d, i) => { 
-            html += `<div class="cover-card stagger-item liquid-bg shadow-2xl" style="--bg-grad:${d.palette}; animation-delay: ${i*0.05}s" onclick="openDetail('${d.id}')"><div class="cover-label font-bold"><div class="text-[14px]">${d.zh}</div><div class="text-[9px] opacity-60 truncate mt-0.5">${d.en}</div></div></div>`; 
+            html += `<div class="cover-card stagger-item liquid-bg shadow-lg" style="--bg-grad:${d.palette}; animation-delay: ${i*0.05}s" onclick="openDetail('${d.id}')"><div class="cover-label font-bold"><div class="text-[14px]">${d.zh}</div><div class="text-[9px] opacity-60 truncate mt-0.5">${d.en}</div></div></div>`; 
         });
         document.getElementById('appContent').innerHTML = html + `</div>`;
     }
@@ -283,9 +308,9 @@
     function renderCabinet() {
         let html = `<div class="large-title">我的酒柜</div><div class="px-6 mb-4 text-ios-gray text-sm font-medium">点选现有的材料，看看能调什么。</div>`;
         html += `<div class="px-6 flex flex-wrap gap-2 mb-8">`;
-        cabinetItems.forEach(item => {
+        cabinetItems.forEach((item, i) => {
             const isSel = myCabinet.includes(item.name);
-            html += `<div class="ing-tag ${isSel?'selected':''}" onclick="toggleCabinetItem('${item.name}')">${item.name}</div>`;
+            html += `<div class="ing-tag stagger-item ${isSel?'selected':''}" style="animation-delay: ${i*0.03}s" onclick="toggleCabinetItem('${item.name}')">${item.name}</div>`;
         });
         html += `</div>`;
 
@@ -315,7 +340,7 @@
 
     function renderShuffle() {
         document.getElementById('appContent').innerHTML = `<div class="large-title">抽选发现</div><div class="flex flex-col items-center justify-center h-[550px] px-10 text-center">
-            <div class="w-[180px] h-[180px] rounded-[45px] bg-gradient-to-br from-ios-red to-purple-700 flex flex-col items-center justify-center shadow-[0_20px_50px_rgba(250,45,72,0.4)] border-[6px] border-white/10 active:scale-[0.85] transition-all duration-300 cursor-pointer" onclick="goLucky()"><span class="text-6xl mb-2">🎲</span><span class="text-[11px] font-black tracking-[0.2em] text-white">SHUFFLE</span></div>
+            <div class="w-[180px] h-[180px] rounded-full bg-gradient-to-br from-ios-red to-purple-700 flex flex-col items-center justify-center shadow-[0_20px_50px_rgba(250,45,72,0.4)] border-[6px] border-white/10 active:scale-[0.85] transition-all duration-300 cursor-pointer" onclick="goLucky()"><span class="text-6xl mb-2">🎲</span><span class="text-[11px] font-black tracking-[0.2em] text-white">SHUFFLE</span></div>
             <div class="mt-14"><div class="text-2xl font-black text-white mb-2">随机惊喜</div><div class="text-ios-gray font-medium">点按按钮，发现下一杯挚爱。</div></div></div>`;
     }
     function goLucky() { showMsg('寻找中...'); setTimeout(()=>openDetail(cocktailDB[Math.floor(Math.random()*100)].id), 600); }
@@ -323,7 +348,7 @@
     function renderSearch() {
         const cats = [{n:'琴酒', c:'#ff6b6b'}, {n:'威士忌', c:'#f39c12'}, {n:'朗姆酒', c:'#27ae60'}, {n:'伏特加', c:'#3498db'}, {n:'龙舌兰', c:'#9b59b6'}, {n:'白兰地', c:'#e67e22'}];
         document.getElementById('appContent').innerHTML = `<div class="large-title">搜索</div><div class="px-6 mt-2">
-            <div class="bg-zinc-900 rounded-xl p-3 flex items-center mb-8 border border-white/5 focus-within:border-ios-blue focus-within:shadow-[0_0_15px_rgba(0,122,255,0.3)] transition-all duration-300">
+            <div class="bg-[#1C1C1E] rounded-[10px] px-3 py-2.5 flex items-center mb-8 border border-white/5 focus-within:border-ios-red focus-within:shadow-[0_0_15px_rgba(250,45,72,0.2)] transition-all duration-300">
                 <span class="mr-2 opacity-40">🔍</span><input type="text" oninput="liveSearch(this.value)" placeholder="酒名、基酒或风味" class="bg-transparent outline-none w-full text-white text-sm">
             </div>
             <div class="text-xl font-bold text-white mb-4">浏览类别</div>
@@ -333,13 +358,12 @@
     window.liveSearch = (val) => {
         const grid = document.getElementById('searchGrid'); 
         if(!val) { 
-            // 恢复分类网格 (无延迟直接刷新避免闪烁)
             const cats = [{n:'琴酒', c:'#ff6b6b'}, {n:'威士忌', c:'#f39c12'}, {n:'朗姆酒', c:'#27ae60'}, {n:'伏特加', c:'#3498db'}, {n:'龙舌兰', c:'#9b59b6'}, {n:'白兰地', c:'#e67e22'}];
             grid.innerHTML = cats.map((c,i) => `<div class="category-tile stagger-item" style="background:${c.c}; animation-delay: ${i*0.05}s" onclick="switchPage('recipes', null, '${c.n}', 'forward')"><span class="absolute top-3 left-3 font-bold text-white text-lg">${c.n}</span></div>`).join('');
             return; 
         }
         const filtered = cocktailDB.filter(d => d.zh.includes(val) || d.en.toLowerCase().includes(val.toLowerCase()));
-        grid.innerHTML = filtered.slice(0, 10).map((d,i) => `<div class="bg-ios-darkCard p-4 mb-2 flex items-center gap-4 rounded-xl cursor-pointer active:scale-[0.98] transition-transform duration-300 stagger-item" style="animation-delay: ${i*0.03}s" onclick="openDetail('${d.id}')"><div class="w-10 h-10 rounded-md liquid-bg flex-shrink-0" style="--bg-grad:${d.palette}"></div><div class="font-bold text-white truncate">${d.zh}</div></div>`).join('');
+        grid.innerHTML = filtered.slice(0, 10).map((d,i) => `<div class="bg-[#1C1C1E] p-4 mb-2 flex items-center gap-4 rounded-xl cursor-pointer active:scale-[0.98] transition-transform duration-300 stagger-item" style="animation-delay: ${i*0.03}s" onclick="openDetail('${d.id}')"><div class="w-10 h-10 rounded-md liquid-bg flex-shrink-0" style="--bg-grad:${d.palette}"></div><div class="font-bold text-white truncate">${d.zh}</div></div>`).join('');
     };
 
     function renderProfile() {
@@ -358,13 +382,12 @@
             <div class="px-6 text-xl font-bold text-white mb-4">我的收藏</div>
             <div class="grid grid-cols-2 gap-4 px-6 pb-40">`;
         if(!fs.length) html += `<div class="col-span-2 text-ios-gray">暂无收藏。</div>`;
-        else fs.forEach((d,i) => { html += `<div class="cover-card stagger-item liquid-bg" style="--bg-grad:${d.palette}; animation-delay: ${i*0.05}s" onclick="openDetail('${d.id}')"><div class="cover-label font-bold text-white">${d.zh}</div></div>`; });
+        else fs.forEach((d,i) => { html += `<div class="cover-card stagger-item liquid-bg shadow-lg" style="--bg-grad:${d.palette}; animation-delay: ${i*0.05}s" onclick="openDetail('${d.id}')"><div class="cover-label font-bold text-white">${d.zh}</div></div>`; });
         document.getElementById('appContent').innerHTML = html + `</div>`;
     }
 
     window.toggleUnit = () => { isOz = !isOz; document.getElementById('appContent').innerHTML = ''; renderProfile(); showMsg(isOz ? '切换至 盎司(oz)' : '切换至 毫升(ml)'); };
 
-    // --- 详情弹窗与动作系统 ---
     function openDetail(id) {
         const d = cocktailDB.find(x => x.id === id); currentDetailId = id;
         const detail = document.getElementById('recipeDetail');

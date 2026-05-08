@@ -101,13 +101,11 @@
             <div class="w-12 h-1.5 bg-white rounded-full"></div>
         </div>
         
-        <div class="h-12 flex items-center justify-between px-6 relative z-20 text-white" style="margin-top: calc(16px + env(safe-area-inset-top, 24px));">
+        <!-- 详情页 NavBar -->
+        <div class="h-12 flex items-center justify-between px-6 relative z-30 text-white" style="margin-top: calc(16px + env(safe-area-inset-top, 24px));" id="detailNavBar">
             <button onclick="closeRecipeDetail()" class="w-10 h-10 flex items-center justify-center bg-white/5 backdrop-blur-xl rounded-full text-xl hover:bg-white/10 active:scale-75 transition-all duration-300 border border-white/10">✕</button>
-            <div class="flex space-x-3 items-center">
-                <button onclick="shareRecipe()" class="w-10 h-10 flex items-center justify-center bg-white/5 backdrop-blur-xl rounded-full text-lg hover:bg-white/10 active:scale-75 transition-all duration-300 border border-white/10" title="分享配方">
-                    <svg viewBox="0 0 24 24" class="w-4 h-4 fill-current"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/></svg>
-                </button>
-                <button id="detailFavBtn" class="text-3xl active:scale-125 transition-transform drop-shadow-[0_0_15px_rgba(250,45,72,0.4)]" onclick="toggleFavorite()">☆</button>
+            <div class="flex items-center" id="detailNavRight">
+                <!-- 右侧按钮组将由 JS 动态渲染（分享、收藏、DIY删除菜单） -->
             </div>
         </div>
         <div class="flex-1 overflow-y-auto px-6 pb-48 relative z-10 text-white detail-inner" id="detailContent"></div>
@@ -137,13 +135,39 @@
 
 <script>
     // --- 全局状态 ---
-    const apiKey = "";
+    const deepseekApiKey = ""; // 替换为你的 DeepSeek API Key
     let favoritedIds = [];
     let currentDetailId = null;
     let animTimer = null;
     let isOz = false; 
     let myCabinet = [];
     let currentListBase = '全部';
+
+    // --- 新增：本地数据持久化引擎 (LocalStorage) ---
+    function loadLocalData() {
+        try {
+            const f = localStorage.getItem('cm_favs'); if(f) favoritedIds = JSON.parse(f);
+            const c = localStorage.getItem('cm_cabinet'); if(c) myCabinet = JSON.parse(c);
+            const o = localStorage.getItem('cm_isOz'); if(o) isOz = JSON.parse(o);
+            const cr = localStorage.getItem('cm_custom_recipes');
+            if(cr) {
+                // 将保存的数组转换回程序需要的 Set 结构
+                const customRecipes = JSON.parse(cr).map(d => ({...d, reqCats: new Set(d.reqCats)}));
+                cocktailDB.unshift(...customRecipes);
+            }
+        } catch(e) { console.error('加载本地数据失败', e); }
+    }
+
+    function saveLocalData() {
+        try {
+            localStorage.setItem('cm_favs', JSON.stringify(favoritedIds));
+            localStorage.setItem('cm_cabinet', JSON.stringify(myCabinet));
+            localStorage.setItem('cm_isOz', JSON.stringify(isOz));
+            // 过滤出用户创作的配方（含 DIY 和 AI）进行独立保存
+            const customRecipes = cocktailDB.filter(d => String(d.id).startsWith('diy_') || String(d.id).startsWith('ai_')).map(d => ({...d, reqCats: Array.from(d.reqCats)}));
+            localStorage.setItem('cm_custom_recipes', JSON.stringify(customRecipes));
+        } catch(e) { console.error('保存本地数据失败', e); }
+    }
 
     // 终极触觉震动反馈
     const haptic = (type = 'light') => {
@@ -384,7 +408,6 @@
         <div id="recipeContainer" class="flex flex-col w-full h-full">
             <div class="px-6 pt-[60px] pb-2 flex justify-between items-center relative">
                 <div id="mainTitle" class="text-[34px] font-black text-white tracking-tight">典藏酒单</div>
-                <!-- 新增：右上角 DIY 入口 -->
                 <button onclick="openDIYModal()" class="w-9 h-9 bg-white/10 backdrop-blur-xl rounded-full flex justify-center items-center text-white text-2xl font-light hover:bg-white/20 active:scale-90 transition-all border border-white/10 shadow-lg" title="DIY新配方">+</button>
             </div>
             <div class="px-6 mb-4 mt-2">
@@ -448,7 +471,7 @@
         renderCabinetHTMLOnly();
     }
 
-    window.clearCabinet = function() { haptic('medium'); if(myCabinet.length === 0) return; myCabinet = []; renderCabinetHTMLOnly(); showMsg("酒柜已清空", true); };
+    window.clearCabinet = function() { haptic('medium'); if(myCabinet.length === 0) return; myCabinet = []; renderCabinetHTMLOnly(); saveLocalData(); showMsg("酒柜已清空", true); };
 
     window.renderCabinetHTMLOnly = function() {
         const kw = document.getElementById('cabinetSearchInput') ? document.getElementById('cabinetSearchInput').value.toLowerCase().trim() : '';
@@ -514,7 +537,7 @@
         document.getElementById('cabinetContent').innerHTML = contentHtml;
     }
 
-    window.toggleCabinetItem = (name) => { haptic('light'); if(myCabinet.includes(name)) myCabinet = myCabinet.filter(n => n!==name); else myCabinet.push(name); renderCabinetHTMLOnly(); };
+    window.toggleCabinetItem = (name) => { haptic('light'); if(myCabinet.includes(name)) myCabinet = myCabinet.filter(n => n!==name); else myCabinet.push(name); renderCabinetHTMLOnly(); saveLocalData(); };
 
     async function fetchWithRetry(url, options, retries = 5) {
         const delays = [1000, 2000, 4000, 8000, 16000];
@@ -536,7 +559,8 @@
 
         const btn = document.getElementById('aiBtn');
         const originalText = btn.innerHTML;
-        btn.innerHTML = `<span class="animate-pulse">✨ 灵魂酒保正在为你摇酒...</span>`;
+        // 使用 Apple 渐变流光文字作为加载动画
+        btn.innerHTML = `<span class="font-bold text-[15px] bg-clip-text text-transparent bg-gradient-to-r from-[#64D2FF] via-[#BF5AF2] to-[#FF375F] animate-pulse">✨ 灵魂酒保正在调制中...</span>`;
         btn.disabled = true; haptic('medium');
 
         const prompt = `You are a world-class mixologist with a poetic soul. The user says: "${input}". 
@@ -551,11 +575,12 @@
 
             const colorIdx = Math.floor(Math.random() * 15);
             const newCocktail = {
-                id: 'ai_' + Date.now(), zh: aiRecipe.zh + ' ✨', en: aiRecipe.en, glass: aiRecipe.glass || 'rocks', abv: aiRecipe.abv || 15, base: aiRecipe.base || "伏特加", ingredients: aiRecipe.ingredients, steps: aiRecipe.steps, flavors: aiRecipe.flavors || [40, 50, 40, 50, 50],
+                id: 'diy_ai_' + Date.now(), zh: aiRecipe.zh + ' ✨', en: aiRecipe.en, glass: aiRecipe.glass || 'rocks', abv: aiRecipe.abv || 15, base: aiRecipe.base || "伏特加", ingredients: aiRecipe.ingredients, steps: aiRecipe.steps, flavors: aiRecipe.flavors || [40, 50, 40, 50, 50],
                 palette: generatePalette(colorIdx), cardGrad: modernGradients[colorIdx], themeColor: solidColors[colorIdx], tagline: aiRecipe.tagline || "来自赛博空间的专属微醺", isAI: true, aiDesc: aiRecipe.aiDesc,
                 reqCats: (() => { let cats = new Set(); aiRecipe.ingredients.forEach(ing => { cabinetItems.forEach(cat => { if(cat.kw.some(k => ing.includes(k))) cats.add(cat.name); }); }); cabinetItems.forEach(cat => { if(cat.kw.some(k => (aiRecipe.base || "伏特加").includes(k))) cats.add(cat.name); }); return cats; })()
             };
-            cocktailDB.unshift(newCocktail); // 加入酒库以支持后续匹配与查看
+            cocktailDB.unshift(newCocktail); // 算作自定义配方，可以被删除
+            saveLocalData(); // 持久化保存 AI 创作
             showRandomModal(newCocktail);
         } catch (error) {
             console.error(error); showMsg("AI 酒保暂时不在吧台，请稍后再试");
@@ -566,39 +591,76 @@
 
     function renderShuffle() {
         document.getElementById('appContent').innerHTML = `
-        <div class="large-title">灵感抽选</div>
-        <div class="flex flex-col items-center justify-start h-auto min-h-[550px] px-8 text-center pb-32">
-            <!-- 经典抽选 -->
-            <div class="w-[120px] h-[120px] rounded-full bg-[#1C1C1E]/80 backdrop-blur-md flex flex-col items-center justify-center shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-white/5 active:scale-[0.85] transition-all duration-300 cursor-pointer relative overflow-hidden mb-4 mt-4" onclick="goLucky()">
-                <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,55,0.1),transparent_70%)]"></div>
-                <span id="luckyDice" class="text-5xl mb-2 z-10 transition-transform duration-500 inline-block">🎲</span>
-                <span class="text-[10px] font-black tracking-[0.3em] text-ios-gold z-10 uppercase">盲盒</span>
+        <div class="flex flex-col w-full h-full relative">
+            <!-- 页面标题 -->
+            <div class="px-6 pt-[60px] pb-6 relative z-10">
+                <div class="text-[34px] font-black text-white tracking-tight leading-tight">灵感探索</div>
+                <div class="text-white/50 text-[13px] font-medium mt-1 tracking-wide">碰撞未知，调配你的专属微醺。</div>
             </div>
-            <div class="text-lg font-black text-white mb-6 tracking-tight">经典随机推荐</div>
 
-            <div class="w-full h-[1px] bg-white/10 mb-8"></div>
+            <!-- Bento Box 聚合卡片区 -->
+            <div class="px-6 space-y-5 pb-32 relative z-10">
+                
+                <!-- Apple Intelligence 级 AI 创作卡片 -->
+                <div class="relative w-full rounded-[32px] p-[1.5px] overflow-hidden group shadow-2xl">
+                    <!-- 炫彩流光跑马灯边缘 (模拟 Siri/Apple Intelligence 唤醒光晕) -->
+                    <div class="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_0%,rgba(10,132,255,0.7)_20%,rgba(191,90,242,0.7)_40%,rgba(255,55,95,0.7)_60%,transparent_80%)] animate-[spin_4s_linear_infinite] opacity-30 blur-md transition-opacity duration-500 group-focus-within:opacity-70"></div>
+                    <!-- 柔和的底色发光 -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-[#0A84FF]/20 via-[#BF5AF2]/20 to-[#FF375F]/20 opacity-30 group-focus-within:opacity-50 transition-opacity duration-500 blur-2xl"></div>
 
-            <!-- AI 心情特调 -->
-            <div class="w-full flex flex-col items-center mb-10">
-                <div class="text-[22px] font-black text-white mb-2 tracking-tight flex items-center"><span class="text-[#BF5AF2] mr-2">✨</span> AI 灵魂酒保</div>
-                <div class="text-ios-gray font-medium text-[13px] mb-5">诉说你的心情或故事，AI 现场为你创作专属特调。</div>
-                <div class="bg-[#1C1C1E] rounded-[20px] w-full p-1 border border-white/10 focus-within:border-[#BF5AF2] focus-within:shadow-[0_0_20px_rgba(191,90,242,0.2)] transition-all duration-300 mb-5">
-                    <textarea id="aiMoodInput" rows="2" placeholder="比如：窗外下着暴雨，此刻我只想听着爵士乐放空..." class="bg-transparent outline-none w-full text-white text-[14px] font-medium placeholder-white/30 resize-none p-3"></textarea>
+                    <!-- 磨砂玻璃内层主体 -->
+                    <div class="relative bg-[#1C1C1E]/80 backdrop-blur-3xl rounded-[30.5px] p-6 z-10 border border-white/5 flex flex-col h-full">
+                        <!-- Header -->
+                        <div class="flex items-center space-x-3 mb-5">
+                            <div class="w-10 h-10 rounded-full bg-black/40 border border-white/10 flex items-center justify-center shadow-inner relative overflow-hidden">
+                                <div class="absolute inset-0 bg-[conic-gradient(from_0deg,#0A84FF,#BF5AF2,#FF375F,#0A84FF)] animate-[spin_3s_linear_infinite] opacity-30 blur-sm"></div>
+                                <span class="text-white text-[16px] relative z-10 mt-[2px]">✨</span>
+                            </div>
+                            <div>
+                                <div class="text-[17px] font-bold text-white tracking-wide leading-tight">AI 灵魂特调</div>
+                                <div class="text-[10px] font-bold text-white/40 tracking-widest uppercase mt-0.5">Powered by Gemini</div>
+                            </div>
+                        </div>
+
+                        <!-- 极简沉浸式输入框 -->
+                        <div class="mb-5 relative">
+                            <textarea id="aiMoodInput" rows="2" placeholder="窗外下着暴雨，想听着爵士乐放空..." class="w-full bg-black/30 border border-white/5 rounded-[18px] p-4 text-[14px] text-white placeholder-white/30 outline-none focus:bg-black/50 focus:border-white/20 transition-all duration-300 resize-none leading-relaxed shadow-inner"></textarea>
+                        </div>
+
+                        <!-- 流光渐变扁平按钮 -->
+                        <button id="aiBtn" onclick="callAIBartender()" class="w-full py-3.5 rounded-[16px] bg-white/5 hover:bg-white/10 active:scale-[0.98] transition-all duration-300 flex justify-center items-center backdrop-blur-md border border-white/5 overflow-hidden relative shadow-md">
+                            <span class="font-bold text-[15px] tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-[#64D2FF] via-[#BF5AF2] to-[#FF375F]">生成专属微醺</span>
+                        </button>
+                    </div>
                 </div>
-                <button id="aiBtn" onclick="callAIBartender()" class="w-full py-4 rounded-[20px] bg-gradient-to-r from-[#5E5CE6] to-[#BF5AF2] text-white font-black text-[15px] active:scale-95 transition-all shadow-[0_10px_30px_rgba(191,90,242,0.4)] flex justify-center items-center">
-                    生成专属 AI 特调 ✨
-                </button>
+
+                <!-- Bento 双列小卡片统一样式 -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- 命运盲盒 -->
+                    <div class="bg-[#1C1C1E]/60 backdrop-blur-3xl rounded-[28px] border border-white/10 p-5 flex flex-col items-start justify-between shadow-2xl active:scale-[0.96] transition-all cursor-pointer h-[150px] relative overflow-hidden group" onclick="goLucky()">
+                        <div class="absolute -right-6 -top-6 w-28 h-28 bg-ios-gold/10 rounded-full blur-2xl group-hover:bg-ios-gold/20 transition-colors duration-500"></div>
+                        <div class="w-10 h-10 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-xl shadow-inner mb-2 relative z-10">🎲</div>
+                        <div class="relative z-10">
+                            <div class="text-[16px] font-bold text-white tracking-wide">命运盲盒</div>
+                            <div class="text-[11px] text-white/40 font-medium mt-1">经典随机抽取</div>
+                        </div>
+                    </div>
+
+                    <!-- 创作工坊 -->
+                    <div class="bg-[#1C1C1E]/60 backdrop-blur-3xl rounded-[28px] border border-white/10 p-5 flex flex-col items-start justify-between shadow-2xl active:scale-[0.96] transition-all cursor-pointer h-[150px] relative overflow-hidden group" onclick="openDIYModal()">
+                        <div class="absolute -right-6 -top-6 w-28 h-28 bg-[#30D158]/10 rounded-full blur-2xl group-hover:bg-[#30D158]/20 transition-colors duration-500"></div>
+                        <div class="w-10 h-10 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-xl shadow-inner mb-2 relative z-10">✍️</div>
+                        <div class="relative z-10">
+                            <div class="text-[16px] font-bold text-white tracking-wide">创作工坊</div>
+                            <div class="text-[11px] text-white/40 font-medium mt-1">手动录入配方</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div class="w-full h-[1px] bg-white/10 mb-8"></div>
-
-            <!-- 新增：DIY 手动录入 -->
-            <div class="w-full flex flex-col items-center">
-                <div class="text-[22px] font-black text-white mb-2 tracking-tight flex items-center"><span class="text-[#30D158] mr-2">✍️</span> 创作工坊</div>
-                <div class="text-ios-gray font-medium text-[13px] mb-5">复刻在酒吧喝到的惊艳，或记录你的灵感特调。</div>
-                <button onclick="openDIYModal()" class="w-full py-4 rounded-[20px] bg-gradient-to-r from-[#28A745] to-[#30D158] text-white font-black text-[15px] active:scale-95 transition-all shadow-[0_10px_30px_rgba(48,209,88,0.4)] flex justify-center items-center">
-                    手动录入 DIY 配方 ✍️
-                </button>
+            
+            <!-- 全局流体背景增强，提升通透感 -->
+            <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-30">
+                <div class="absolute top-[10%] left-[-20%] w-[150%] h-[150%] bg-[radial-gradient(circle_at_center,rgba(94,92,230,0.15)_0%,transparent_50%)] filter blur-[80px] animate-[fluid-rotate_30s_infinite_linear]"></div>
             </div>
         </div>`;
     }
@@ -647,28 +709,25 @@
         setTimeout(() => { const randomDrink = cocktailDB[Math.floor(Math.random() * cocktailDB.length)]; showRandomModal(randomDrink); }, 250);
     }
 
-    // --- 新增：全屏 DIY 配方模态框逻辑 ---
+    // --- 全屏 DIY 配方模态框逻辑 ---
     window.openDIYModal = function() {
         haptic('light');
         const modal = document.getElementById('diyModal');
         modal.innerHTML = `
-            <!-- NavBar -->
-            <div class="h-[60px] flex items-center justify-between px-6 pt-[16px] relative z-20 text-white border-b border-white/10 bg-[#000]/80 backdrop-blur-md">
-                <button onclick="closeDIYModal()" class="text-ios-blue text-[15px] font-medium active:opacity-50 transition-opacity">取消</button>
+            <!-- 修复：加入安全区域高度 (safe-area-inset-top)，并放大两侧按钮的触控热区 -->
+            <div class="flex items-center justify-between px-6 pb-3 relative z-20 text-white border-b border-white/10 bg-[#000]/80 backdrop-blur-md" style="padding-top: calc(16px + env(safe-area-inset-top, 24px));">
+                <button onclick="closeDIYModal()" class="text-ios-blue text-[16px] p-2 -ml-2 font-medium active:opacity-50 transition-opacity">取消</button>
                 <div class="font-bold text-[16px] tracking-wide">DIY 专属配方</div>
-                <button onclick="saveDIYRecipe()" class="text-ios-blue text-[15px] font-bold active:opacity-50 transition-opacity">保存</button>
+                <button onclick="saveDIYRecipe()" class="text-ios-blue text-[16px] p-2 -mr-2 font-bold active:opacity-50 transition-opacity">保存</button>
             </div>
             
-            <!-- Body -->
             <div class="flex-1 overflow-y-auto px-6 py-6 space-y-5 text-white pb-32">
-                <!-- 名称模块 -->
                 <div class="bg-[#1C1C1E] rounded-[20px] p-4 border border-white/5 shadow-lg">
                     <input type="text" id="diyZh" placeholder="中文酒名 (如: 仲夏夜之梦)" class="w-full bg-transparent outline-none mb-3 font-bold text-lg placeholder-white/30 text-white">
                     <div class="w-full h-[1px] bg-white/5 mb-3"></div>
                     <input type="text" id="diyEn" placeholder="English Name (Optional)" class="w-full bg-transparent outline-none text-[13px] placeholder-white/30 text-white/80">
                 </div>
 
-                <!-- 属性模块 -->
                 <div class="bg-[#1C1C1E] rounded-[20px] p-5 border border-white/5 shadow-lg grid grid-cols-2 gap-4">
                     <div>
                         <div class="text-[11px] font-bold text-white/40 mb-1 uppercase tracking-wider">基酒基调</div>
@@ -700,7 +759,6 @@
                     </div>
                 </div>
 
-                <!-- 材料模块 -->
                 <div class="bg-[#1C1C1E] rounded-[20px] p-5 border border-white/5 shadow-lg">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-[14px] font-bold text-white">材料清单</span>
@@ -709,7 +767,6 @@
                     <textarea id="diyIng" rows="4" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 outline-none text-[13px] leading-relaxed placeholder-white/20 resize-none text-white/90" placeholder="例如：\n琴酒 45ml\n鲜柠檬汁 15ml\n冰块 适量"></textarea>
                 </div>
 
-                <!-- 步骤模块 -->
                 <div class="bg-[#1C1C1E] rounded-[20px] p-5 border border-white/5 shadow-lg">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-[14px] font-bold text-white">制作工序</span>
@@ -719,7 +776,7 @@
                 </div>
 
                 <div class="text-[11px] text-white/30 text-center font-medium mt-4 pb-8">
-                    ✨ 保存后，系统将自动进行颜色分配，并同步至智能酒柜库中。
+                    ✨ 保存后，系统将自动进行颜色分配，并智能生成五维风味数据。
                 </div>
             </div>
         `;
@@ -731,6 +788,7 @@
         document.getElementById('diyModal').classList.add('translate-y-full');
     }
 
+    // 智能提取风味雷达数据
     window.saveDIYRecipe = function() {
         const zh = document.getElementById('diyZh').value.trim();
         const en = document.getElementById('diyEn').value.trim() || 'Custom Recipe';
@@ -740,62 +798,60 @@
         const ingText = document.getElementById('diyIng').value.trim();
         const stepText = document.getElementById('diySteps').value.trim();
 
-        if (!zh || !ingText || !stepText) {
-            showMsg('请填写完整的名称、材料和步骤！');
-            return;
-        }
+        if (!zh || !ingText || !stepText) { showMsg('请填写完整的名称、材料和步骤！'); return; }
 
         const ingredients = ingText.split('\n').map(s => s.trim()).filter(s => s);
         const steps = stepText.split('\n').map(s => s.trim()).filter(s => s);
 
-        // 智能分析配料并映射到酒柜分类
         let reqCats = new Set();
-        ingredients.forEach(ing => {
-            cabinetItems.forEach(cat => {
-                if(cat.kw.some(k => ing.includes(k))) reqCats.add(cat.name);
-            });
-        });
-        // 保底加上基酒属性
-        cabinetItems.forEach(cat => {
-            if(cat.kw.some(k => base.includes(k))) reqCats.add(cat.name);
-        });
+        ingredients.forEach(ing => { cabinetItems.forEach(cat => { if(cat.kw.some(k => ing.includes(k))) reqCats.add(cat.name); }); });
+        cabinetItems.forEach(cat => { if(cat.kw.some(k => base.includes(k))) reqCats.add(cat.name); });
 
-        // 智能分配极光颜色
+        // 🧠 新增：正则嗅探材料，智能生成极具真实感的风味雷达
+        let calcFlavors = [20, 20, 20, 20, 20]; // 默认底座 [酸, 甜, 苦, 烈, 果香]
+        let ingStr = ingredients.join(' ');
+        
+        if (ingStr.match(/柠檬|青柠|酸/)) calcFlavors[0] = 75;
+        else if (ingStr.match(/西柚|番茄/)) calcFlavors[0] = 45;
+        
+        if (ingStr.match(/糖|蜜|利口酒|可乐|雪碧|甜|百利/)) calcFlavors[1] = 70;
+        else if (ingStr.match(/味美思|果汁/)) calcFlavors[1] = 45;
+
+        if (ingStr.match(/苦精|金巴利|阿玛罗|咖啡|茶/)) calcFlavors[2] = 85;
+        else if (ingStr.match(/柚|皮/)) calcFlavors[2] = 40;
+        
+        if (abv >= 30) calcFlavors[3] = 90;
+        else if (abv >= 20) calcFlavors[3] = 70;
+        else if (abv >= 10) calcFlavors[3] = 45;
+        else calcFlavors[3] = 10;
+
+        if (ingStr.match(/汁|果|樱桃|橙|菠萝|莓|柚/)) calcFlavors[4] = 85;
+        else if (ingStr.match(/薄荷|玫瑰|花/)) calcFlavors[4] = 50;
+
+        // 加入自然波动干扰，使数据不像机器生成的
+        calcFlavors = calcFlavors.map(v => Math.min(100, Math.max(0, v + Math.floor(Math.random()*16 - 8))));
+
         const colorIdx = Math.floor(Math.random() * 15);
-
         const newCocktail = {
-            id: 'diy_' + Date.now(),
-            zh: zh,
-            en: en,
-            glass: glass,
-            abv: abv,
-            base: base,
-            ingredients: ingredients,
-            steps: steps,
-            flavors: [50, 50, 50, 50, 50], // DIY 默认风味雷达居中
-            palette: generatePalette(colorIdx),
-            cardGrad: modernGradients[colorIdx],
-            themeColor: solidColors[colorIdx],
-            tagline: "我的专属定制微醺配方",
-            reqCats: reqCats
+            id: 'diy_' + Date.now(), zh: zh, en: en, glass: glass, abv: abv, base: base, ingredients: ingredients, steps: steps, flavors: calcFlavors,
+            palette: generatePalette(colorIdx), cardGrad: modernGradients[colorIdx], themeColor: solidColors[colorIdx], tagline: "我的专属定制微醺配方", reqCats: reqCats
         };
 
-        // 注入全局数据库置顶
         cocktailDB.unshift(newCocktail); 
+        saveLocalData(); // 持久化保存 DIY 配方
         
-        haptic('success');
-        showMsg('配方创建成功！', true);
-        closeDIYModal();
-        
-        // 保存后默认跳转回酒单列表，方便查看新创建的卡片
+        haptic('success'); showMsg('配方创建成功！', true); closeDIYModal();
         switchPage('recipes', document.getElementById('tab-recipes')); 
     }
 
 
     function renderProfile() {
         let fs = cocktailDB.filter(d => favoritedIds.includes(d.id));
-        let html = `<div class="large-title">典藏夹</div>
-            <div class="px-6 mb-10">
+        // 新增：筛选出所有的 DIY 记录和 AI 特调记录
+        let diyList = cocktailDB.filter(d => String(d.id).startsWith('diy_'));
+
+        let html = `<div class="large-title">我的主页</div>
+            <div class="px-6 mb-8">
                 <div class="bg-[#1C1C1E]/80 backdrop-blur-md rounded-[20px] p-5 flex justify-between items-center border border-white/5 shadow-xl">
                     <span class="font-bold text-white/90 tracking-wide text-sm">全局量酒单位</span>
                     <div class="relative flex bg-[#0A0A0A] rounded-full p-1 cursor-pointer w-[100px] h-[36px] active:scale-95 transition-transform" onclick="toggleUnit()">
@@ -805,23 +861,83 @@
                     </div>
                 </div>
             </div>
-            <div class="px-6 text-lg font-bold text-ios-red mb-4 tracking-wider">星标珍藏</div>
+            
+            <!-- 新增：创作记录展柜 -->
+            <div class="px-6 text-lg font-bold text-[#30D158] mb-4 tracking-wider flex items-center"><span class="mr-2 text-xl">✍️</span> 创作记录</div>
+            <div class="grid grid-cols-2 gap-4 px-6 mb-10">`;
+        
+        if(!diyList.length) {
+            html += `<div class="col-span-2 text-white/30 text-[13px] text-center bg-white/5 rounded-2xl py-6 border border-white/5">暂无创作，快去灵感页试试吧。</div>`;
+        } else {
+            diyList.forEach((d,i) => { 
+                html += `<div class="cover-card stagger-item shadow-lg" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.05, 0.8)}s" onclick="openDetail('${d.id}')">
+                    <div class="card-initial" style="opacity: 0.2">${d.en.charAt(0)}</div>
+                    <div class="cover-label font-bold text-white">
+                        <div class="text-[14px] tracking-wide truncate">${d.zh}</div>
+                        <div class="text-[9px] font-medium opacity-60 truncate mt-0.5 tracking-wider">${d.isAI ? 'AI 特调' : 'DIY 原创'}</div>
+                    </div>
+                </div>`; 
+            });
+        }
+        
+        html += `</div>
+            <!-- 原有的星标珍藏展柜 -->
+            <div class="px-6 text-lg font-bold text-ios-red mb-4 tracking-wider flex items-center"><span class="mr-2 text-xl">★</span> 星标珍藏</div>
             <div class="grid grid-cols-2 gap-4 px-6 pb-40">`;
-        if(!fs.length) html += `<div class="col-span-2 text-ios-gray/50 text-sm">尚未收藏任何配方。</div>`;
-        else fs.forEach((d,i) => { html += `<div class="cover-card stagger-item shadow-lg" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.05, 0.8)}s" onclick="openDetail('${d.id}')"><div class="card-initial">${d.en.charAt(0)}</div><div class="cover-label font-bold text-white"><div class="text-[14px] tracking-wide">${d.zh}</div></div></div>`; });
+            
+        if(!fs.length) {
+            html += `<div class="col-span-2 text-white/30 text-[13px] text-center bg-white/5 rounded-2xl py-6 border border-white/5">尚未收藏任何配方。</div>`;
+        } else {
+            fs.forEach((d,i) => { 
+                html += `<div class="cover-card stagger-item shadow-lg" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.05, 0.8)}s" onclick="openDetail('${d.id}')">
+                    <div class="card-initial">${d.en.charAt(0)}</div>
+                    <div class="cover-label font-bold text-white"><div class="text-[14px] tracking-wide truncate">${d.zh}</div></div>
+                </div>`; 
+            });
+        }
         document.getElementById('appContent').innerHTML = html + `</div>`;
     }
 
-    window.toggleUnit = () => { haptic('light'); isOz = !isOz; document.getElementById('appContent').innerHTML = ''; renderProfile(); showMsg(isOz ? '已切换至盎司(oz)' : '已切换至毫升(ml)'); };
+    window.toggleUnit = () => { haptic('light'); isOz = !isOz; saveLocalData(); document.getElementById('appContent').innerHTML = ''; renderProfile(); showMsg(isOz ? '已切换至盎司(oz)' : '已切换至毫升(ml)'); };
 
     function openDetail(id) {
         haptic('light'); 
         const d = cocktailDB.find(x => x.id === id); currentDetailId = id;
         const detail = document.getElementById('recipeDetail');
         detail.style.setProperty('--bg-grad', d.palette);
+        
+        // 动态注入 NavBar 右侧的按钮组
         const isFav = favoritedIds.includes(id);
+        const favColor = isFav ? d.themeColor : 'rgba(255,255,255,0.4)';
+        
+        let deleteBtnHtml = '';
+        // 仅当你打开 DIY 或是 AI 特调时才展示可删除按钮
+        if (d.id.startsWith('diy_')) {
+            deleteBtnHtml = `
+            <div class="relative flex items-center z-[150]">
+                <!-- 气泡确认菜单 -->
+                <div id="deleteMenuPanel" class="absolute right-0 top-12 bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/10 p-3 rounded-2xl shadow-2xl flex-col gap-2 transform scale-95 opacity-0 origin-top-right transition-all duration-300 pointer-events-none hidden">
+                    <div class="text-[11px] text-white/50 px-2 py-1 text-center whitespace-nowrap mb-1">确定删除此自定义配方？</div>
+                    <div class="flex gap-2">
+                        <button onclick="confirmDeleteDIY('${d.id}')" class="flex-1 py-2.5 bg-ios-red text-white text-[13px] font-bold rounded-xl active:scale-95 transition-all shadow-[0_4px_15px_rgba(250,45,72,0.4)]">删除</button>
+                        <button onclick="toggleDeleteMenu()" class="flex-1 py-2.5 bg-white/10 text-white text-[13px] font-bold rounded-xl active:scale-95 transition-all">保留</button>
+                    </div>
+                </div>
+                <!-- 触发按钮 -->
+                <button onclick="toggleDeleteMenu()" class="w-10 h-10 flex items-center justify-center bg-white/5 backdrop-blur-xl rounded-full text-lg hover:bg-white/10 active:scale-75 transition-all duration-300 border border-white/10 ml-3" title="删除配方">
+                    <svg viewBox="0 0 24 24" class="w-4 h-4 fill-current opacity-70"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </button>
+            </div>`;
+        }
+
+        document.getElementById('detailNavRight').innerHTML = `
+            <button onclick="shareRecipe()" class="w-10 h-10 flex items-center justify-center bg-white/5 backdrop-blur-xl rounded-full text-lg hover:bg-white/10 active:scale-75 transition-all duration-300 border border-white/10" title="分享配方">
+                <svg viewBox="0 0 24 24" class="w-4 h-4 fill-current"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/></svg>
+            </button>
+            <button id="detailFavBtn" class="text-3xl active:scale-125 transition-transform drop-shadow-[0_0_15px_rgba(250,45,72,0.4)] ml-3" style="color: ${favColor}" onclick="toggleFavorite()">★</button>
+            ${deleteBtnHtml}
+        `;
         document.getElementById('detailFavBtn').innerText = isFav ? '★' : '☆';
-        document.getElementById('detailFavBtn').style.color = isFav ? d.themeColor : 'rgba(255,255,255,0.4)';
         document.getElementById('toastIcon').style.color = d.themeColor;
 
         const ingredientsHtml = d.ingredients.map((ingString, index) => {
@@ -934,6 +1050,42 @@
         setTimeout(() => { detail.classList.add('detail-show'); startSim(d); }, 50);
     }
 
+    // 新增：折叠删除菜单交互
+    window.toggleDeleteMenu = function() {
+        haptic('light');
+        const panel = document.getElementById('deleteMenuPanel');
+        if(panel.classList.contains('opacity-0')) {
+            panel.classList.remove('hidden');
+            setTimeout(() => { panel.classList.remove('opacity-0', 'scale-95', 'pointer-events-none'); panel.classList.add('opacity-100', 'scale-100'); }, 10);
+        } else {
+            panel.classList.remove('opacity-100', 'scale-100'); panel.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+            setTimeout(() => panel.classList.add('hidden'), 300);
+        }
+    };
+
+    // 新增：确认删除 DIY 记录 (增加在 Profile 页删除时的自动刷新逻辑)
+    window.confirmDeleteDIY = function(id) {
+        haptic('heavy');
+        const idx = cocktailDB.findIndex(x => x.id === id);
+        if(idx > -1) cocktailDB.splice(idx, 1);
+        
+        const favIdx = favoritedIds.indexOf(id);
+        if(favIdx > -1) favoritedIds.splice(favIdx, 1);
+        
+        saveLocalData(); // 删除操作后持久化覆盖
+        
+        showMsg('配方已彻底删除', true);
+        closeRecipeDetail();
+        
+        // 删除后自动刷新当前的列表界面，避免出现空数据卡片
+        setTimeout(() => {
+            if(document.getElementById('recipeGrid')) renderListHTMLOnly();
+            if(document.getElementById('cabinetContent')) renderCabinetHTMLOnly();
+            const tabProfile = document.getElementById('tab-profile');
+            if(tabProfile && tabProfile.classList.contains('active')) renderProfile();
+        }, 300);
+    };
+
     window.toggleStep = function(idx, totalLength, themeColor) {
         haptic('light');
         const drink = cocktailDB.find(x => x.id === currentDetailId);
@@ -1028,6 +1180,12 @@
         detail.classList.add('translate-y-full'); 
         document.getElementById('mainWrapper').classList.remove('content-shrink'); 
         document.getElementById('bottomTab').style.transform = 'translateY(0)'; 
+        // 恢复可能打开的删除菜单
+        const panel = document.getElementById('deleteMenuPanel');
+        if(panel) {
+            panel.classList.remove('opacity-100', 'scale-100');
+            panel.classList.add('opacity-0', 'scale-95', 'pointer-events-none', 'hidden');
+        }
     }
 
     window.toggleFavorite = function() { 
@@ -1035,6 +1193,7 @@
         const d = cocktailDB.find(x => x.id === currentDetailId);
         if(idx>-1) { favoritedIds.splice(idx,1); haptic('light'); } 
         else { favoritedIds.push(currentDetailId); haptic('success'); } 
+        saveLocalData(); // 变更收藏状态后持久化保存
         showMsg(idx>-1?'已移出典藏':'已加入典藏', idx===-1); 
         document.getElementById('detailFavBtn').innerText = favoritedIds.includes(currentDetailId)?'★':'☆'; 
         document.getElementById('detailFavBtn').style.color = favoritedIds.includes(currentDetailId) ? d.themeColor : 'rgba(255,255,255,0.4)'; 
@@ -1120,6 +1279,8 @@
         startY = 0; currentY = 0; startX = 0; isSwiping = false;
     });
 
+    // 页面完全启动前，优先接管并加载本地储存的数据库状态
+    loadLocalData();
     window.onload = () => switchPage('recipes', document.getElementById('tab-recipes'));
 </script>
 </body>

@@ -6,70 +6,73 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
-    <title>Cocktail Master - Ultimate Native Edition</title>
+    <title>Cocktail Master - Spatial Native Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
-                extend: { colors: { ios: { red: '#FA2D48', blue: '#0A84FF', gold: '#D4AF37', gray: '#8E8E93', darkBg: '#000000', surface: '#1C1C1E' } } }
+                extend: { colors: { ios: { red: '#FA2D48', blue: '#0A84FF', gold: '#D4AF37', gray: '#8E8E93', darkBg: '#050505', surface: '#151517' } } }
             }
         }
     </script>
     <style>
-        body { background-color: #000; margin: 0; padding: 0; width: 100vw; height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
-        .iphone { width: 100%; height: 100%; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #000; }
+        body { background-color: #050505; margin: 0; padding: 0; width: 100vw; height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+        .iphone { width: 100%; height: 100%; position: relative; overflow: hidden; display: flex; flex-direction: column; background: transparent; z-index: 10; }
         
+        /* 动态极光环境背景 */
+        .ambient-bg { position: fixed; inset: 0; z-index: 0; background: #050505; pointer-events: none; overflow: hidden; }
+        .ambient-orb { position: absolute; border-radius: 50%; mix-blend-mode: screen; filter: blur(90px); animation: float-orb 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); }
+        .ambient-orb-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background: rgba(94, 92, 230, 0.15); }
+        .ambient-orb-2 { bottom: -20%; right: -10%; width: 70vw; height: 70vw; background: rgba(10, 132, 255, 0.15); animation-delay: -10s; animation-direction: alternate-reverse; }
+        @keyframes float-orb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(10vw, 10vh) scale(1.2); } }
+
         .content-wrap { flex: 1; display: flex; flex-direction: column; height: 100%; transition: all 0.5s cubic-bezier(0.32, 0.72, 0, 1); position: relative; overflow: hidden; }
-        .content-shrink { transform: scale(0.93) translateY(-10px); border-radius: 40px; opacity: 0.5; pointer-events: none; filter: blur(3px); }
-        .content { flex: 1; overflow-y: auto; scroll-behavior: smooth; width: 100%; height: 100%; padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)); }
+        .content-shrink { transform: scale(0.92) translateY(-10px); border-radius: 40px; opacity: 0.6; pointer-events: none; filter: blur(5px); }
+        .content { flex: 1; overflow-y: auto; scroll-behavior: smooth; width: 100%; height: 100%; padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); position: relative; z-index: 10; }
         
         .content::-webkit-scrollbar, .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .glass-pill { backdrop-filter: saturate(180%) blur(30px); background: rgba(28, 28, 30, 0.85); border: 0.5px solid rgba(255, 255, 255, 0.1); }
-        .tab-bar-container { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; align-items: center; z-index: 100; transition: transform 0.5s; padding-bottom: env(safe-area-inset-bottom, 12px); height: calc(65px + env(safe-area-inset-bottom, 12px)); backdrop-filter: saturate(200%) blur(30px); -webkit-backdrop-filter: saturate(200%) blur(30px); background: rgba(18, 18, 20, 0.9); border-top: 0.5px solid rgba(255, 255, 255, 0.05); }
-        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #666666; cursor: pointer; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); font-weight: 500; transform-origin: center; height: 100%; padding-top: 8px; }
+        /* 高级悬浮胶囊导航栏 */
+        .tab-bar-container { 
+            position: absolute; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); left: 6%; right: 6%; width: 88%; 
+            display: flex; justify-content: space-around; align-items: center; z-index: 100; transition: transform 0.5s; 
+            height: 64px; border-radius: 32px;
+            backdrop-filter: blur(30px) saturate(200%); -webkit-backdrop-filter: blur(30px) saturate(200%); 
+            background: rgba(30, 30, 32, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.05); 
+        }
+        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #777; cursor: pointer; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); font-weight: 600; transform-origin: center; height: 100%; }
         .tab-item:active { transform: scale(0.9); opacity: 0.7; }
-        .tab-item.active { color: #FA2D48; transform: scale(1.05); font-weight: 700; }
+        .tab-item.active { color: #fff; transform: scale(1.05); font-weight: 800; }
+        .tab-item.active svg { filter: drop-shadow(0 2px 10px rgba(255,255,255,0.4)); }
         .tab-item svg { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); color: inherit; }
 
-        @keyframes fluid-rotate { from { transform: translate(-10%, -10%) rotate(0deg); } to { transform: translate(10%, 10%) rotate(360deg); } }
-        .liquid-bg { position: relative; overflow: hidden; background: #000; }
-        .liquid-bg::before { content: ''; position: absolute; top: -75%; left: -75%; width: 250%; height: 250%; background: var(--bg-grad); filter: blur(65px); animation: fluid-rotate 25s infinite linear; opacity: 0.5; z-index: 0; }
-
-        .cover-card { 
-            aspect-ratio: 1 / 1; border-radius: 20px; position: relative; overflow: hidden; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.08), inset 0 -1px 20px rgba(0,0,0,0.5); 
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; border: 1px solid rgba(255,255,255,0.03);
+        /* Spatial UI 质感卡片核心 */
+        .glass-card {
+            background: rgba(26, 26, 28, 0.6);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255,255,255,0.04);
+            border-radius: 28px; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .cover-card:active { transform: scale(0.94); box-shadow: 0 4px 15px rgba(0,0,0,0.5); filter: brightness(0.9); }
-        
-        .card-initial {
-            position: absolute; top: -10%; right: -5%; font-size: 110px; font-weight: 900; font-style: italic;
-            color: rgba(255, 255, 255, 0.04); z-index: 1; pointer-events: none; user-select: none;
-            mix-blend-mode: plus-lighter;
-        }
+        .glass-card:active { transform: scale(0.96); filter: brightness(0.9); }
 
-        .cover-label { 
-            position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 14px; 
-            background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.1));
-            color: #fff; z-index: 10; 
-        }
+        .large-title { font-size: 38px; font-weight: 900; padding: 60px 24px 10px 24px; letter-spacing: -1px; color: white; transition: all 0.3s ease; display: flex; flex-direction: column; }
 
-        .large-title { font-size: 34px; font-weight: 800; padding: 70px 24px 12px 24px; letter-spacing: -1px; color: white; transition: all 0.3s ease; }
-
-        #recipeDetail { transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1); will-change: transform; }
+        #recipeDetail { transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1); will-change: transform; background: #0A0A0C; }
         .detail-show .detail-inner { opacity: 1; transform: translateY(0); }
-        .detail-inner { transition: all 0.4s ease 0.1s; opacity: 0; transform: translateY(25px); }
+        .detail-inner { transition: all 0.4s ease 0.1s; opacity: 0; transform: translateY(30px); }
 
-        .ing-tag { border: 1px solid rgba(255,255,255,0.1); color: #999; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); background: rgba(255,255,255,0.03); white-space: nowrap; }
+        .ing-tag { border: 1px solid rgba(255,255,255,0.08); color: #888; border-radius: 20px; padding: 7px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); background: rgba(255,255,255,0.04); white-space: nowrap; }
         .ing-tag:active { transform: scale(0.92); }
-        .ing-tag.selected { background: #FA2D48; color: #fff; border-color: #FA2D48; transform: scale(1.05); box-shadow: 0 4px 15px rgba(250,45,72,0.4); font-weight: 700; }
+        .ing-tag.selected { background: #FA2D48; color: #fff; border-color: #FA2D48; transform: scale(1.05); box-shadow: 0 4px 15px rgba(250,45,72,0.4); font-weight: 800; }
 
-        @keyframes stagger-fade-in { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .stagger-item { opacity: 0; animation: stagger-fade-in 0.5s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+        @keyframes stagger-fade-in { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .stagger-item { opacity: 0; animation: stagger-fade-in 0.6s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
 
+        /* Animation Keyframes */
         @keyframes pour-action { 0% { stroke-dashoffset: 16; } 100% { stroke-dashoffset: 0; } }
         @keyframes muddle-action { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
         @keyframes shake-action { 0%, 100% { transform: translate(0,0) rotate(0deg); } 25% { transform: translate(2px,-2px) rotate(5deg); } 75% { transform: translate(-2px,2px) rotate(-5deg); } }
@@ -78,19 +81,7 @@
         @keyframes flame-flicker { 0%, 100% { transform: scale(1) skewX(0deg); opacity: 0.9; } 50% { transform: scale(1.1) skewX(-5deg); opacity: 1; } }
         @keyframes rim-glow { 0% { opacity: 0.4; } 100% { opacity: 1; filter: drop-shadow(0 0 3px white); } }
         @keyframes wipe-wedge { 0% { transform: translate(var(--startX), var(--y)) rotate(-25deg); } 100% { transform: translate(var(--endX), var(--y)) rotate(25deg); } }
-        
-        @keyframes vigorous-shake {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            10% { transform: translate(-5px, -5px) rotate(-15deg); }
-            20% { transform: translate(5px, 5px) rotate(15deg); }
-            30% { transform: translate(-5px, 5px) rotate(-15deg); }
-            40% { transform: translate(5px, -5px) rotate(15deg); }
-            50% { transform: translate(-5px, -5px) rotate(-15deg); }
-            60% { transform: translate(5px, 5px) rotate(15deg); }
-            70% { transform: translate(-5px, 5px) rotate(-15deg); }
-            80% { transform: translate(5px, -5px) rotate(15deg); }
-            90% { transform: translate(-5px, -5px) rotate(-15deg); }
-        }
+        @keyframes vigorous-shake { 0%, 100% { transform: translate(0, 0) rotate(0deg); } 10% { transform: translate(-5px, -5px) rotate(-15deg); } 20% { transform: translate(5px, 5px) rotate(15deg); } 30% { transform: translate(-5px, 5px) rotate(-15deg); } 40% { transform: translate(5px, -5px) rotate(15deg); } 50% { transform: translate(-5px, -5px) rotate(-15deg); } 60% { transform: translate(5px, 5px) rotate(15deg); } 70% { transform: translate(-5px, 5px) rotate(-15deg); } 80% { transform: translate(5px, -5px) rotate(15deg); } 90% { transform: translate(-5px, -5px) rotate(-15deg); } }
 
         .anim-pour-line { stroke-dasharray: 4 4; animation: pour-action 0.3s infinite linear; }
         .anim-muddler { animation: muddle-action 0.4s infinite ease-in-out; }
@@ -105,113 +96,86 @@
         
         .font-art { font-family: "Songti SC", "Noto Serif CJK SC", "STSong", "PT Serif", serif; }
 
-        /* --- 白天模式全局覆盖 --- */
-        body.light { background-color: #F2F2F7; color: #000; }
-        body.light .iphone, body.light .liquid-bg { background-color: #F2F2F7; }
-        body.light .liquid-bg::before { opacity: 0.2; filter: blur(60px) brightness(1.1); }
+        /* --- 白天模式极致适配 --- */
+        body.light .ambient-bg { background: #F2F2F7; }
+        body.light .ambient-orb-1 { background: rgba(94, 92, 230, 0.08); }
+        body.light .ambient-orb-2 { background: rgba(10, 132, 255, 0.08); }
         
         body.light .text-white, body.light .large-title { color: #000; }
-        body.light .text-white\/5 { color: rgba(0,0,0,0.05); }
-        body.light .text-white\/10 { color: rgba(0,0,0,0.1); }
-        body.light .text-white\/20 { color: rgba(0,0,0,0.2); }
-        body.light .text-white\/30 { color: rgba(0,0,0,0.3); }
         body.light .text-white\/40 { color: rgba(0,0,0,0.4); }
         body.light .text-white\/50 { color: rgba(0,0,0,0.5); }
-        body.light .text-white\/60 { color: rgba(0,0,0,0.6); }
         body.light .text-white\/70 { color: rgba(0,0,0,0.7); }
         body.light .text-white\/80 { color: rgba(0,0,0,0.8); }
         body.light .text-white\/90 { color: rgba(0,0,0,0.9); }
         
-        body.light .cover-card .text-white, body.light #randomCardWrap .text-white { color: #fff; }
-        body.light .cover-card .text-white\/5, body.light #randomCardWrap .text-white\/5 { color: rgba(255,255,255,0.05); }
-        body.light .cover-card .text-white\/10, body.light #randomCardWrap .text-white\/10 { color: rgba(255,255,255,0.1); }
-        body.light .cover-card .text-white\/20, body.light #randomCardWrap .text-white\/20 { color: rgba(255,255,255,0.2); }
-        body.light .cover-card .text-white\/30, body.light #randomCardWrap .text-white\/30 { color: rgba(255,255,255,0.3); }
-        body.light .cover-card .text-white\/40, body.light #randomCardWrap .text-white\/40 { color: rgba(255,255,255,0.4); }
-        body.light .cover-card .text-white\/50, body.light #randomCardWrap .text-white\/50 { color: rgba(255,255,255,0.5); }
-        body.light .cover-card .text-white\/60, body.light #randomCardWrap .text-white\/60 { color: rgba(255,255,255,0.6); }
-        body.light .cover-card .text-white\/70, body.light #randomCardWrap .text-white\/70 { color: rgba(255,255,255,0.7); }
-        body.light .cover-card .text-white\/80, body.light #randomCardWrap .text-white\/80 { color: rgba(255,255,255,0.8); }
-        body.light .cover-card .text-white\/90, body.light #randomCardWrap .text-white\/90 { color: rgba(255,255,255,0.9); }
+        body.light .glass-card { background: rgba(255, 255, 255, 0.65); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); }
+        body.light .glass-card .text-white, body.light #randomCardWrap .text-white { color: #000; }
         
-        body.light .bg-\[\#1C1C1E\] { background-color: #FFFFFF; }
-        body.light .bg-\[\#1C1C1E\]\/60 { background-color: rgba(255,255,255,0.6); }
-        body.light .bg-\[\#1C1C1E\]\/80 { background-color: rgba(255,255,255,0.8); }
-        body.light .bg-\[\#1C1C1E\]\/90 { background-color: rgba(255,255,255,0.9); }
-        body.light .bg-\[\#1C1C1E\]\/95 { background-color: rgba(255,255,255,0.95); }
-        body.light .bg-\[\#000\] { background-color: #F2F2F7; }
-        body.light .bg-\[\#000\]\/80, body.light .bg-\[\#000\]\/95 { background-color: rgba(255,255,255,0.95); }
+        body.light .tab-bar-container { background: rgba(255, 255, 255, 0.75); border-color: rgba(0,0,0,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        body.light .tab-item { color: #888; }
+        body.light .tab-item.active { color: #000; }
         
         body.light .bg-black\/30 { background-color: rgba(0,0,0,0.05); }
         body.light .bg-black\/40 { background-color: rgba(0,0,0,0.08); }
-        body.light .bg-black\/50 { background-color: rgba(0,0,0,0.12); }
-        body.light .bg-black\/60 { background-color: rgba(255,255,255,0.6); }
-        body.light .bg-black\/80 { background-color: rgba(255,255,255,0.9); }
-        
         body.light .bg-white\/5 { background-color: rgba(0,0,0,0.03); }
         body.light .bg-white\/10 { background-color: rgba(0,0,0,0.06); }
-        body.light .bg-white\/20 { background-color: rgba(0,0,0,0.1); }
-        body.light .bg-white\/\[0\.04\] { background-color: rgba(255,255,255,0.6); }
-        body.light .bg-white\/\[0\.05\] { background-color: rgba(0,0,0,0.05); }
-        body.light .bg-white\/\[0\.06\] { background-color: rgba(255,255,255,0.7); }
-        
         body.light .border-white\/5 { border-color: rgba(0,0,0,0.05); }
         body.light .border-white\/10 { border-color: rgba(0,0,0,0.1); }
-        body.light .border-white\/20 { border-color: rgba(0,0,0,0.2); }
-        body.light .border-white\/30 { border-color: rgba(0,0,0,0.3); }
-        body.light .border-white\/\[0\.05\] { border-color: rgba(0,0,0,0.05); }
-        body.light .border-white\/\[0\.06\] { border-color: rgba(0,0,0,0.06); }
-        body.light .border-white\/\[0\.08\] { border-color: rgba(0,0,0,0.08); }
         
-        body.light .cover-card .border-white\/10, body.light #randomCardWrap .border-white\/10 { border-color: rgba(255,255,255,0.1); }
-        body.light .cover-card .border-white\/20, body.light #randomCardWrap .border-white\/20 { border-color: rgba(255,255,255,0.2); }
-        
-        body.light .focus\:border-white\/20:focus { border-color: rgba(0,0,0,0.2); }
-        body.light .focus\:border-white\/30:focus { border-color: rgba(0,0,0,0.3); }
-        
-        body.light input::placeholder, body.light textarea::placeholder { color: rgba(0,0,0,0.3) !important; }
-
         body.light svg text { fill: #000 !important; }
         body.light svg line[stroke="rgba(255,255,255,0.2)"] { stroke: rgba(0,0,0,0.1) !important; }
         body.light svg polygon[stroke="rgba(255,255,255,0.15)"] { stroke: rgba(0,0,0,0.1) !important; }
-        
-        body.light #animationStage svg path[stroke="white"],
-        body.light #animationStage svg line[stroke="white"],
-        body.light #animationStage svg path[stroke="rgba(255,255,255,0.9)"],
-        body.light #animationStage svg line[stroke="rgba(255,255,255,0.9)"] { stroke: rgba(0,0,0,0.8) !important; }
-        
+        body.light svg path[stroke="rgba(255,255,255,0.7)"] { stroke: rgba(0,0,0,0.8) !important; }
+        body.light #animationStage svg path[stroke="white"], body.light #animationStage svg line[stroke="white"] { stroke: rgba(0,0,0,0.8) !important; }
         body.light #animationStage svg rect[fill="rgba(255,255,255,0.8)"] { fill: rgba(0,0,0,0.2) !important; }
         body.light #animationStage svg rect[fill="rgba(255,255,255,0.7)"] { fill: rgba(0,0,0,0.3) !important; }
         body.light #animationStage svg path[fill="rgba(255,255,255,0.2)"] { fill: rgba(0,0,0,0.1) !important; }
         
-        body.light .tab-bar-container { background: rgba(255,255,255,0.9); border-top-color: rgba(0,0,0,0.1); }
-        body.light #diyModal input, body.light #diyModal textarea, body.light #diyModal select, body.light #dataModal textarea, body.light #shoppingModal .text-white { color: #000; }
+        body.light #diyModal input, body.light #diyModal textarea, body.light #diyModal select { color: #000; }
         body.light #diyModal select option { background: #fff; color: #000; }
         body.light #toast { background: rgba(255,255,255,0.95); color: #000; border-color: rgba(0,0,0,0.1); }
+        body.light #recipeDetail { background: #F2F2F7; }
+
+        /* 统一卡片居中排版类 */
+        .cover-card-centered {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+            background: rgba(26, 26, 28, 0.6);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255,255,255,0.04);
+            border-radius: 28px; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 16px;
+        }
+        .cover-card-centered:active { transform: scale(0.96); filter: brightness(0.9); }
+        body.light .cover-card-centered { background: rgba(255, 255, 255, 0.65); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); }
     </style>
 </head>
 <body class="dark">
 
-<div class="iphone bg-ios-darkBg" id="appRoot">
+<div class="ambient-bg">
+    <div class="ambient-orb ambient-orb-1"></div>
+    <div class="ambient-orb ambient-orb-2"></div>
+</div>
+
+<div class="iphone bg-transparent" id="appRoot">
     <div class="content-wrap" id="mainWrapper"><div class="content" id="appContent"></div></div>
 
-    <!-- 沉浸式详情层 -->
-    <div id="recipeDetail" class="absolute inset-0 z-[120] transform translate-y-full flex flex-col overflow-hidden liquid-bg">
-        <div class="w-full flex justify-center pt-2 absolute top-0 z-30 opacity-50 pointer-events-none" style="padding-top: calc(8px + env(safe-area-inset-top, 24px));">
+    <!-- 沉浸式详情层 (Bento Grid 适配) -->
+    <div id="recipeDetail" class="absolute inset-0 z-[120] transform translate-y-full flex flex-col overflow-hidden">
+        <div class="w-full flex justify-center pt-3 absolute top-0 z-30 opacity-50 pointer-events-none" style="padding-top: calc(8px + env(safe-area-inset-top, 24px));">
             <div class="w-12 h-1.5 bg-white rounded-full"></div>
         </div>
         
         <div class="h-12 flex items-center justify-between px-6 relative z-30 text-white" style="margin-top: calc(16px + env(safe-area-inset-top, 24px));" id="detailNavBar">
-            <button onclick="closeRecipeDetail()" class="w-10 h-10 flex items-center justify-center bg-white/5 backdrop-blur-xl rounded-full text-xl hover:bg-white/10 active:scale-75 transition-all duration-300 border border-white/10">✕</button>
+            <button onclick="closeRecipeDetail()" class="w-10 h-10 flex items-center justify-center glass-card rounded-full text-xl hover:bg-white/10 active:scale-75 transition-all duration-300 border border-white/10">✕</button>
             <div class="flex items-center" id="detailNavRight"></div>
         </div>
         <div class="flex-1 overflow-y-auto px-6 pb-48 relative z-10 text-white detail-inner" id="detailContent"></div>
     </div>
 
-    <!-- 命运卡牌弹窗 -->
     <div id="randomModal" class="hidden absolute inset-0 z-[150]"></div>
 
-    <!-- AI 加载动画 -->
     <div id="aiLoadingModal" class="hidden absolute inset-0 z-[200] bg-[#000]/80 backdrop-blur-xl flex flex-col items-center justify-center transition-all duration-300 opacity-0 pointer-events-none">
         <div class="relative w-28 h-28 mb-6 flex justify-center items-center">
             <div class="absolute inset-0 bg-gradient-to-br from-[#64D2FF] via-[#BF5AF2] to-[#FF375F] rounded-full blur-[40px] opacity-40 animate-pulse"></div>
@@ -226,28 +190,39 @@
         <div class="text-[13px] text-white/50 font-medium tracking-wide">AI 正在为您创作专属配方...</div>
     </div>
 
-    <!-- 全屏模态框：DIY、采购单、数据迁移 -->
-    <div id="diyModal" class="absolute inset-0 z-[180] transform translate-y-full transition-transform duration-500 flex flex-col bg-[#000]"></div>
-    <div id="shoppingModal" class="absolute inset-0 z-[185] transform translate-y-full transition-transform duration-500 flex flex-col bg-[#000]"></div>
-    <div id="dataModal" class="absolute inset-0 z-[190] transform translate-y-full transition-transform duration-500 flex flex-col bg-[#000]"></div>
+    <!-- 模态层 -->
+    <div id="diyModal" class="absolute inset-0 z-[180] transform translate-y-full transition-transform duration-500 flex flex-col bg-[#050505]"></div>
+    <div id="shoppingModal" class="absolute inset-0 z-[185] transform translate-y-full transition-transform duration-500 flex flex-col bg-[#050505]"></div>
+    <div id="dataModal" class="absolute inset-0 z-[190] transform translate-y-full transition-transform duration-500 flex flex-col bg-[#050505]"></div>
 
-    <!-- 底部 4-Tab 导航 -->
+    <!-- 悬浮导航栏 -->
     <div class="tab-bar-container" id="bottomTab">
-        <div class="tab-item active" id="tab-recipes" onclick="switchPage('recipes', this)"><div class="w-[24px] h-[24px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><rect x="5" y="5" width="9" height="9" rx="2.5"/><rect x="18" y="5" width="9" height="9" rx="2.5"/><rect x="5" y="18" width="9" height="9" rx="2.5"/><rect x="18" y="18" width="9" height="9" rx="2.5"/></svg></div><span>酒单</span></div>
-        <div class="tab-item" id="tab-cabinet" onclick="switchPage('cabinet', this)"><div class="w-[24px] h-[24px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><path d="M6 6h20v4H6zM8 12h16v14H8zM14 16h4v2h-4z"/></svg></div><span>酒柜</span></div>
-        <div class="tab-item" id="tab-randomizer" onclick="switchPage('randomizer', this)"><div class="w-[24px] h-[24px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><path d="M4 22h4.5l6-12H21l-4.5 4.5 2.1 2.1 8.1-8.1-8.1-8.1-2.1 2.1 4.5 4.5h-7.5l-6 12H4v3zM21 18l-1.5 1.5 3 3H4v3h18.5l-3 3 1.5 1.5 5.5-5.5L21 18z"/></svg></div><span>灵感</span></div>
-        <div class="w-[0.5px] h-8 bg-white/5 mx-1"></div>
-        <div class="tab-item" id="tab-profile" onclick="switchPage('profile', this)"><div class="w-[24px] h-[24px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><path d="M22 6h-12c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-14c0-1.1-.9-2-2-2zm-8 16c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z"/><circle cx="16" cy="16" r="2.5"/></svg></div><span>我的</span></div>
+        <div class="tab-item active" id="tab-recipes" onclick="switchPage('recipes', this)">
+            <div class="w-[22px] h-[22px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><rect x="5" y="5" width="9" height="9" rx="3"/><rect x="18" y="5" width="9" height="9" rx="3"/><rect x="5" y="18" width="9" height="9" rx="3"/><rect x="18" y="18" width="9" height="9" rx="3"/></svg></div>
+            <span>酒单</span>
+        </div>
+        <div class="tab-item" id="tab-cabinet" onclick="switchPage('cabinet', this)">
+            <div class="w-[22px] h-[22px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><path d="M6 6h20v4H6zM8 12h16v14H8zM14 16h4v2h-4z"/></svg></div>
+            <span>酒柜</span>
+        </div>
+        <div class="tab-item" id="tab-randomizer" onclick="switchPage('randomizer', this)">
+            <div class="w-[22px] h-[22px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><path d="M4 22h4.5l6-12H21l-4.5 4.5 2.1 2.1 8.1-8.1-8.1-8.1-2.1 2.1 4.5 4.5h-7.5l-6 12H4v3zM21 18l-1.5 1.5 3 3H4v3h18.5l-3 3 1.5 1.5 5.5-5.5L21 18z"/></svg></div>
+            <span>灵感</span>
+        </div>
+        <div class="w-[1px] h-6 bg-white/10 mx-1"></div>
+        <div class="tab-item" id="tab-profile" onclick="switchPage('profile', this)">
+            <div class="w-[22px] h-[22px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><path d="M22 6h-12c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-14c0-1.1-.9-2-2-2zm-8 16c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z"/><circle cx="16" cy="16" r="2.5"/></svg></div>
+            <span>我的</span>
+        </div>
     </div>
     
-    <div id="toast" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#1C1C1E]/90 backdrop-blur-2xl text-white px-6 py-4 rounded-[18px] z-[250] hidden transition-all opacity-0 font-bold text-center shadow-2xl border border-white/10 flex flex-col items-center">
+    <div id="toast" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 glass-card text-white px-6 py-4 rounded-[20px] z-[250] hidden transition-all opacity-0 font-bold text-center flex flex-col items-center">
         <div id="toastIcon" class="text-3xl mb-1 hidden">✓</div>
         <div id="toastText" class="text-sm tracking-wide"></div>
     </div>
 </div>
 
 <script>
-    // --- 全局状态 ---
     const DEEPSEEK_API_KEY = "sk-7cdc2f2e2d8e433c8bf035a757546a31"; 
     let favoritedIds = [];
     let currentDetailId = null;
@@ -263,7 +238,8 @@
     let currentSort = 'default';
     let tempRating = 0;
 
-    // --- 本地数据持久化引擎 ---
+    const escapeHTML = str => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+
     function loadLocalData() {
         try {
             const f = localStorage.getItem('cm_favs'); if(f) favoritedIds = JSON.parse(f);
@@ -273,16 +249,13 @@
             const tn = localStorage.getItem('cm_notes'); if(tn) tastingNotes = JSON.parse(tn);
             const o = localStorage.getItem('cm_isOz'); if(o) isOz = JSON.parse(o);
             const l = localStorage.getItem('cm_isLight'); 
-            if(l) { 
-                isLightMode = JSON.parse(l); 
-                document.body.classList.toggle('light', isLightMode); 
-            }
+            if(l) { isLightMode = JSON.parse(l); document.body.classList.toggle('light', isLightMode); }
             const cr = localStorage.getItem('cm_custom_recipes');
             if(cr) {
                 const customRecipes = JSON.parse(cr).map(d => ({...d, reqCats: new Set(d.reqCats)}));
                 cocktailDB.unshift(...customRecipes);
             }
-        } catch(e) { console.error('加载本地数据失败', e); }
+        } catch(e) { console.error('加载失败', e); }
     }
 
     function saveLocalData() {
@@ -296,7 +269,13 @@
             localStorage.setItem('cm_isLight', JSON.stringify(isLightMode));
             const customRecipes = cocktailDB.filter(d => String(d.id).startsWith('diy_') || String(d.id).startsWith('ai_')).map(d => ({...d, reqCats: Array.from(d.reqCats)}));
             localStorage.setItem('cm_custom_recipes', JSON.stringify(customRecipes));
-        } catch(e) { console.error('保存本地数据失败', e); }
+            
+            if (window.firebaseDb && window.firebaseUser) {
+                const payload = { favs: favoritedIds, cabinet: myCabinet, shopping: shoppingList, shoppingChecked: shoppingCheckedList, notes: tastingNotes, isOz: isOz, isLightMode: isLightMode, customRecipes: customRecipes };
+                const docRef = window.firebaseDoc(window.firebaseDb, 'artifacts', window.firebaseAppId, 'users', window.firebaseUser.uid, 'appData', 'cmState');
+                window.firebaseSetDoc(docRef, payload, { merge: true }).catch(console.error);
+            }
+        } catch(e) {}
     }
 
     const haptic = (type = 'light') => {
@@ -326,20 +305,31 @@
         "radial-gradient(circle at 50% 100%, rgba(226,54,54,0.3) 0%, transparent 60%), radial-gradient(circle at 50% 0%, rgba(255,159,10,0.15) 0%, transparent 60%), #161212",
         "radial-gradient(circle at 0% 0%, rgba(0,168,232,0.3) 0%, transparent 60%), radial-gradient(circle at 100% 100%, rgba(94,92,230,0.15) 0%, transparent 60%), #111416"
     ];
-    
+
     const premiumColors = [
         "rgba(250,45,72,0.4)", "rgba(10,132,255,0.4)", "rgba(212,175,55,0.4)", "rgba(48,209,88,0.4)", "rgba(191,90,242,0.4)",
         "rgba(255,159,10,0.4)", "rgba(100,210,255,0.4)", "rgba(255,55,95,0.4)", "rgba(0,199,190,0.4)", "rgba(94,92,230,0.4)",
         "rgba(255,214,10,0.4)", "rgba(255,112,67,0.4)", "rgba(138,43,226,0.4)", "rgba(226,54,54,0.4)", "rgba(0,168,232,0.4)"
     ];
     
-    const solidColors = [
-        "#FA2D48", "#0A84FF", "#D4AF37", "#30D158", "#BF5AF2", 
-        "#FF9F0A", "#64D2FF", "#FF375F", "#00C7BE", "#5E5CE6", 
-        "#FFD60A", "#FF7043", "#8A2BE2", "#E23636", "#00A8E8"
-    ];
-    
+    const solidColors = ["#FA2D48", "#0A84FF", "#D4AF37", "#30D158", "#BF5AF2", "#FF9F0A", "#64D2FF", "#FF375F", "#00C7BE", "#5E5CE6", "#FFD60A", "#FF7043", "#8A2BE2", "#E23636", "#00A8E8"];
+
     const generatePalette = (cId) => `radial-gradient(circle at 20% 30%, ${premiumColors[cId]} 0%, transparent 60%), radial-gradient(circle at 80% 70%, ${premiumColors[(cId+5)%15]} 0%, transparent 60%), radial-gradient(circle at 50% 50%, ${premiumColors[(cId+10)%15]} 0%, transparent 50%)`;
+
+    window.getGlassSvgCover = function(glass, color) {
+        let path = '', liquid = '';
+        switch(glass) {
+            case 'martini': path = 'M 10 15 L 32 40 L 54 15 Z M 32 40 L 32 56 M 22 56 L 42 56'; liquid = 'M 14 20 L 32 40 L 50 20 Z'; break;
+            case 'rocks': path = 'M 18 20 L 22 56 L 42 56 L 46 20 Z'; liquid = 'M 20 30 L 22 54 L 42 54 L 44 30 Z'; break;
+            case 'highball': path = 'M 22 10 L 22 56 L 42 56 L 42 10 Z'; liquid = 'M 22 25 L 22 54 L 42 54 L 42 25 Z'; break;
+            case 'coupe': path = 'M 10 18 C 10 40, 54 40, 54 18 M 32 38 L 32 56 M 22 56 L 42 56'; liquid = 'M 12 23 C 18 36, 46 36, 52 23 Z'; break;
+            case 'shot': path = 'M 24 36 L 26 56 L 38 56 L 40 36 Z'; liquid = 'M 25 40 L 26 54 L 38 54 L 39 40 Z'; break;
+            case 'flute': path = 'M 26 12 L 26 38 C 26 48, 38 48, 38 38 L 38 12 M 32 46 L 32 56 M 24 56 L 40 56'; liquid = 'M 26 20 L 26 38 C 26 44, 38 44, 38 38 L 38 20 Z'; break;
+            case 'wine': path = 'M 18 15 C 18 40, 46 40, 46 15 M 32 38 L 32 56 M 22 56 L 42 56'; liquid = 'M 19 25 C 23 37, 41 37, 45 25 Z'; break;
+            default: path = 'M 18 20 L 22 56 L 42 56 L 46 20 Z'; liquid = 'M 20 30 L 22 54 L 42 54 L 44 30 Z'; break;
+        }
+        return `<svg viewBox="0 0 64 64" class="w-full h-full"><path d="${liquid}" fill="${color}" opacity="0.75"/><path d="${path}" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="${liquid}" fill="url(#gloss)" opacity="0.5"/><defs><linearGradient id="gloss" x1="0%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stop-color="white" stop-opacity="0.6"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient></defs></svg>`;
+    };
 
     const cabinetItems = [
         { name: '琴酒', kw: ['琴酒','金酒'] }, { name: '伏特加', kw: ['伏特加'] }, { name: '朗姆酒', kw: ['朗姆'] }, { name: '龙舌兰', kw: ['龙舌兰'] },
@@ -369,7 +359,7 @@
         ["边车","Sidecar","coupe",22,"白兰地",["干邑白兰地 50ml","三罗(Triple Sec) 20ml","鲜柠檬汁 20ml"],"shake", ["可选择性地给碟形杯做半圈细糖边","摇酒壶中加入白兰地、君度与柠檬汁","加满冰块剧烈摇晃至充分冷却","双重过滤入准备好的酒杯中","挤压橙皮精油增香"]],
         ["老广场","Vieux Carre","rocks",25,"威士忌",["黑麦威士忌 30ml","干邑 30ml","甜红味美思 30ml","本内迪克特 1茶匙","裴乔氏苦精 2滴"],"stir", ["古典杯中直接加入一块大老冰","依次倒入所有液体材料与苦精","使用吧勺平稳搅拌约30秒","使酒体与融水达到完美平衡","挤压柠檬皮精油并投入杯中装饰"]],
         ["萨泽拉克","Sazerac","rocks",30,"白兰地",["干邑白兰地 50ml","苦艾酒 10ml","方糖 1块","裴乔氏苦精 2滴"],"stir", ["用苦艾酒对冰镇过的古典杯进行润杯","在另一个搅拌杯中捣碎方糖与苦精","加入干邑与冰块进行平稳搅拌","滤入刚才润好的古典杯(切记不加冰)","挤压柠檬皮精油释放香气并丢弃果皮"]],
-        ["新加坡司令","Singapore Sling","highball",14,"琴酒",["金酒 30ml","樱桃利口酒 15ml","君度 7.5ml","本内迪克特 7.5ml","菠萝汁 120ml","鲜青柠汁 15ml","红石榴糖浆 10ml","苦精 1滴"],"shake", ["摇酒壶中加入除苏打水外的所有材料","加入冰块剧烈摇晃使果汁起泡","滤入装满冰块的高球杯中","补满少量苏打水并轻轻提拉搅拌","以菠萝块与樱桃进行华丽的热带装饰"]],
+        ["新加坡司令","Singapore Sling","highball",14,"琴酒",["金酒 30ml","樱桃利口酒 15ml","君度 7.5ml","本内迪克特 7.5ml","菠萝汁 120ml","鲜青柠汁 15ml","红石榴糖浆 10ml","苦精 1滴","苏打水 补满"],"shake", ["摇酒壶中加入除苏打水外的所有材料","加入冰块剧烈摇晃使果汁起泡","滤入装满冰块的高球杯中","补满少量苏打水并轻轻提拉搅拌","以菠萝块与樱桃进行华丽的热带装饰"]],
         ["血腥玛丽","Bloody Mary","highball",12,"伏特加",["伏特加 45ml","番茄汁 90ml","鲜柠檬汁 15ml","辣酱油 2滴","塔巴斯科辣酱 2滴","芹菜盐 适量","黑胡椒 适量"],"stir", ["高球杯或调酒壶中加入适量冰块","倒入伏特加、番茄汁与柠檬汁","加入所有调味料并反复来回倒(Rolling)","直至酒体均匀融合并充分冷却","以西芹棒和青柠角进行丰富的装饰"]],
         ["盘尼西林","Penicillin","rocks",22,"威士忌",["调和苏格兰威士忌 60ml","鲜柠檬汁 22.5ml","蜂蜜糖浆 22.5ml","生姜糖浆 22.5ml","艾雷岛单一麦芽威士忌 7.5ml"],"shake", ["摇酒壶中加入除艾雷岛威士忌外的材料","加冰块摇晃至充分冷却与融合","滤入装有大方冰的古典杯中","将艾雷岛泥煤威士忌轻轻浮在表层(Float)","以一片糖渍姜片作为点睛装饰"]],
         ["纸飞机","Paper Plane","coupe",20,"威士忌",["波本威士忌 30ml","阿玛罗 30ml","阿佩罗 30ml","鲜柠檬汁 30ml"],"shake", ["摇酒壶中加入等比例的四种液体材料","加入大量冰块剧烈摇晃","摇晃10-15秒至壶身表面起霜","双重过滤入冰镇的碟形杯中","折一架迷你纸飞机夹在杯沿作为趣味装饰"]],
@@ -532,6 +522,7 @@
             case 'highball': conf = { path: 'M 22 10 L 22 56 L 42 56 L 42 10', clip: 'M 22 10 L 22 56 L 42 56 L 42 10 Z', topY: 10, bottomY: 56, rim: {x1: 22, x2: 42}, ice: [{x: 28, y: 46, size: 8}, {x: 28, y: 36, size: 8}, {x: 28, y: 26, size: 8}], stir: {x1: 46, y1: 2, x2: 28, y2: 54}, garnish: {x: 42, y: 10}, muddle: {x: 32, y: 10, w: 6, h: 46} }; break;
             case 'shot': conf = { path: 'M 24 36 L 26 56 L 38 56 L 40 36', clip: 'M 24 36 L 26 56 L 38 56 L 40 36 Z', topY: 36, bottomY: 56, rim: {x1: 24, x2: 40}, ice: [], stir: {x1: 42, y1: 24, x2: 32, y2: 54}, garnish: {x: 38, y: 36}, muddle: null }; break;
             case 'flute': conf = { path: 'M 26 12 L 26 38 C 26 48, 38 48, 38 38 L 38 12 M 32 46 L 32 56 M 24 56 L 40 56', clip: 'M 26 12 L 26 38 C 26 48, 38 48, 38 38 L 38 12 Z', topY: 12, bottomY: 46, rim: {x1: 26, x2: 38}, ice: [], stir: {x1: 42, y1: 4, x2: 32, y2: 44}, garnish: {x: 36, y: 12}, muddle: null }; break;
+            case 'wine': conf = { path: 'M 18 15 C 18 40, 46 40, 46 15 M 32 38 L 32 56 M 22 56 L 42 56', clip: 'M 18 15 C 18 40, 46 40, 46 15 Z', topY: 15, bottomY: 38, rim: {x1: 18, x2: 46}, ice: [{x: 28, y: 28, size: 8}], stir: {x1: 46, y1: 6, x2: 32, y2: 36}, garnish: {x: 48, y: 18}, muddle: null }; break;
             case 'coupe': default: conf = { path: 'M 10 18 C 10 40, 54 40, 54 18 M 32 38 L 32 56 M 22 56 L 42 56', clip: 'M 10 18 C 10 40, 54 40, 54 18 Z', topY: 18, bottomY: 38, rim: {x1: 10, x2: 54}, ice: [{x: 28, y: 28, size: 8}], stir: {x1: 46, y1: 6, x2: 32, y2: 36}, garnish: {x: 48, y: 18}, muddle: null }; break;
         }
 
@@ -585,7 +576,7 @@
         setTimeout(()=>{ t.classList.add('opacity-0'); setTimeout(()=>t.classList.add('hidden'),300); },2000); 
     }
 
-    function switchPage(pageId, el, direction='fade') {
+    function switchPage(pageId, el, filter=null, direction='fade') {
         haptic('light'); 
         if(animTimer) clearInterval(animTimer);
         const content = document.getElementById('appContent');
@@ -596,7 +587,7 @@
         else content.style.transform = 'scale(0.97)';
         
         setTimeout(() => {
-            if(pageId==='recipes') renderList();
+            if(pageId==='recipes') renderList(filter);
             else if(pageId==='cabinet') renderCabinet();
             else if(pageId==='randomizer') renderShuffle();
             else if(pageId==='profile') renderProfile();
@@ -617,7 +608,6 @@
     }
 
     window.filterListByBase = function(f) { haptic('light'); currentListBase = f; renderListHTMLOnly(); };
-    window.filterListByFlavor = function(f) { haptic('light'); currentListFlavor = f; renderListHTMLOnly(); };
 
     window.toggleSort = function() {
         haptic('light');
@@ -626,28 +616,32 @@
         if (btn) {
             if (currentSort === 'ratingDesc') {
                 btn.classList.add('text-ios-gold', 'bg-ios-gold/10', 'border-ios-gold/30');
-                btn.classList.remove('text-white/40', 'bg-[#1C1C1E]/80', 'border-white/5');
+                btn.classList.remove('text-white/40', 'bg-white/5', 'border-white/5');
             } else {
                 btn.classList.remove('text-ios-gold', 'bg-ios-gold/10', 'border-ios-gold/30');
-                btn.classList.add('text-white/40', 'bg-[#1C1C1E]/80', 'border-white/5');
+                btn.classList.add('text-white/40', 'bg-white/5', 'border-white/5');
             }
         }
         renderListHTMLOnly();
     };
 
-    function renderList() {
+    function renderList(f=null) {
+        currentListBase = f || '全部';
         let html = `
         <div id="recipeContainer" class="flex flex-col w-full h-full">
             <div class="px-6 pt-[60px] pb-2 flex justify-between items-center relative">
-                <div id="mainTitle" class="text-[34px] font-black text-white tracking-tight">典藏酒单</div>
-                <button onclick="openDIYModal()" class="w-9 h-9 bg-white/10 backdrop-blur-xl rounded-full flex justify-center items-center text-white text-2xl font-light hover:bg-white/20 active:scale-90 transition-all border border-white/10 shadow-lg" title="DIY新配方">+</button>
+                <div class="flex flex-col">
+                    <span class="text-[12px] font-bold text-white/40 tracking-[0.2em] uppercase mb-1">Cocktail Master</span>
+                    <div id="mainTitle" class="text-[38px] font-black text-white tracking-tighter">典藏酒单</div>
+                </div>
+                <button onclick="openDIYModal()" class="w-10 h-10 glass-card rounded-full flex justify-center items-center text-white text-2xl font-light hover:bg-white/20 active:scale-90 transition-all border border-white/10 shadow-lg mt-2" title="DIY新配方">+</button>
             </div>
-            <div class="px-6 mb-3 mt-2 flex gap-2">
-                <div class="flex-1 bg-[#1C1C1E]/80 backdrop-blur-md rounded-[12px] px-4 py-2.5 flex items-center border border-white/5 focus-within:border-ios-red focus-within:shadow-[0_0_15px_rgba(250,45,72,0.15)] transition-all duration-300">
+            <div class="px-6 mb-3 mt-4 flex gap-2">
+                <div class="flex-1 glass-card rounded-[16px] px-4 py-3 flex items-center border border-white/5 focus-within:border-ios-red focus-within:shadow-[0_0_15px_rgba(250,45,72,0.15)] transition-all duration-300">
                     <span class="mr-3 opacity-40 text-lg">🔍</span>
                     <input type="text" id="searchInput" oninput="renderListHTMLOnly()" placeholder="搜索酒名、配方材料(如:苦精)..." class="bg-transparent outline-none w-full text-white text-[15px] font-medium placeholder-white/30">
                 </div>
-                <button onclick="toggleSort()" id="sortBtn" class="w-[44px] flex-shrink-0 ${currentSort === 'ratingDesc' ? 'text-ios-gold bg-ios-gold/10 border-ios-gold/30' : 'text-white/40 bg-[#1C1C1E]/80 border-white/5'} backdrop-blur-md rounded-[12px] border flex justify-center items-center hover:bg-white/10 active:scale-95 transition-all text-xl" title="按星级排序">
+                <button onclick="toggleSort()" id="sortBtn" class="w-[50px] flex-shrink-0 ${currentSort === 'ratingDesc' ? 'text-ios-gold bg-ios-gold/10 border-ios-gold/30' : 'text-white/40 bg-white/5 border-white/5'} backdrop-blur-md rounded-[16px] border flex justify-center items-center hover:bg-white/10 active:scale-95 transition-all text-xl" title="按星级排序">
                     <svg viewBox="0 0 24 24" class="w-6 h-6 fill-current"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 </button>
             </div>
@@ -659,42 +653,19 @@
     }
 
     window.renderListHTMLOnly = function() {
-        const bases = ['全部', '琴酒', '威士忌', '朗姆酒', '伏特加', '龙舌兰', '白兰地', '无酒精'];
-        const flavors = ['全部风味', '偏酸', '偏甜', '微苦', '果香', '高烈度'];
+        const bases = ['全部', '琴酒', '威士忌', '朗姆酒', '伏特加', '龙舌兰', '白兰地'];
         const kw = document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim().toLowerCase() : '';
         
-        let tagsHtml = `<div class="px-6 flex space-x-2.5 overflow-x-auto no-scrollbar mb-2 pb-1">`;
+        let tagsHtml = `<div class="px-6 flex space-x-2.5 overflow-x-auto no-scrollbar mb-4 pb-2">`;
         bases.forEach(f => {
             const isSel = currentListBase === f;
-            tagsHtml += `<div class="px-4 py-1.5 rounded-full ${isSel ? 'bg-ios-gold text-black shadow-[0_2px_10px_rgba(212,175,55,0.4)]' : 'bg-white/10 text-white/60 border border-white/5'} text-[12px] font-bold whitespace-nowrap transition-all cursor-pointer" onclick="filterListByBase('${f}')">${f}</div>`;
-        });
-        tagsHtml += `</div><div class="px-6 flex space-x-2.5 overflow-x-auto no-scrollbar mb-4 pb-2">`;
-        flavors.forEach(f => {
-            const isSel = currentListFlavor === f;
-            tagsHtml += `<div class="px-3 py-1 rounded-full ${isSel ? 'bg-[#0A84FF] text-white shadow-[0_2px_10px_rgba(10,132,255,0.4)]' : 'bg-transparent text-white/40 border border-white/10'} text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer" onclick="filterListByFlavor('${f}')">${f}</div>`;
+            tagsHtml += `<div class="px-5 py-2 rounded-full ${isSel ? 'bg-white text-black shadow-[0_4px_15px_rgba(255,255,255,0.2)]' : 'glass-card text-white/60'} text-[13px] font-bold whitespace-nowrap transition-all cursor-pointer" onclick="filterListByBase('${f}')">${f}</div>`;
         });
         tagsHtml += `</div>`;
-        
         if(document.getElementById('filterTags')) document.getElementById('filterTags').innerHTML = tagsHtml;
 
         let list = cocktailDB.filter(d => !(d.isAI && !d.saved));
-        
-        if(currentListBase && currentListBase !== '全部') {
-            if(currentListBase === '无酒精') list = list.filter(d => d.abv === 0 || d.base.includes('无酒精'));
-            else list = list.filter(d => d.base.includes(currentListBase));
-        }
-
-        if(currentListFlavor !== '全部风味') {
-            list = list.filter(d => {
-                if(currentListFlavor === '偏酸') return d.flavors[0] >= 55;
-                if(currentListFlavor === '偏甜') return d.flavors[1] >= 55;
-                if(currentListFlavor === '微苦') return d.flavors[2] >= 55;
-                if(currentListFlavor === '高烈度') return d.abv >= 20;
-                if(currentListFlavor === '果香') return d.flavors[4] >= 55;
-                return true;
-            });
-        }
-
+        if(currentListBase && currentListBase !== '全部') list = list.filter(d => d.base.includes(currentListBase));
         if(kw) { list = list.filter(d => d.zh.toLowerCase().includes(kw) || d.en.toLowerCase().includes(kw) || d.base.toLowerCase().includes(kw) || d.ingredients.some(ing => ing.toLowerCase().includes(kw))); }
 
         if (currentSort === 'ratingDesc') {
@@ -710,42 +681,54 @@
             const noteInfo = tastingNotes[d.id];
             const hasRating = noteInfo && noteInfo.rating > 0;
             const subtitleHtml = hasRating 
-                ? `<div class="text-[10px] text-[#D4AF37] font-medium mt-1 tracking-widest drop-shadow-md">${'★'.repeat(noteInfo.rating)}</div>` 
-                : `<div class="text-[9px] font-medium opacity-60 truncate mt-0.5 tracking-wider">${d.en}</div>`;
+                ? `<div class="text-[11px] text-[#D4AF37] font-medium mt-1 tracking-widest drop-shadow-md">${'★'.repeat(noteInfo.rating)}</div>` 
+                : `<div class="text-[10px] font-medium text-white/50 truncate tracking-wide uppercase mt-1 w-full px-2">${d.en}</div>`;
 
             return `
-            <div class="cover-card stagger-item shadow-xl" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.03, 0.4)}s" onclick="openDetail('${d.id}')">
-                <div class="card-initial">${d.en.charAt(0)}</div>
-                <div class="cover-label flex flex-col justify-end">
-                    <div class="text-[14px] font-bold leading-tight drop-shadow-md text-white truncate w-full">${d.zh}</div>
+            <div class="cover-card-centered stagger-item group h-[210px] cursor-pointer" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.03, 0.4)}s" onclick="openDetail('${d.id}')">
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div class="w-32 h-32 blur-[40px] opacity-30 rounded-full transition-opacity duration-500 group-hover:opacity-60" style="background: ${d.themeColor}"></div>
+                </div>
+                
+                <div class="w-[72px] h-[72px] mb-3 opacity-90 drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)] z-10 transform transition-transform duration-500 group-hover:scale-110">
+                    ${window.getGlassSvgCover(d.glass, d.themeColor)}
+                </div>
+                
+                <div class="z-10 w-full flex flex-col items-center text-center">
+                    <div class="text-[16px] font-bold text-white drop-shadow-md truncate w-full px-1">${d.zh}</div>
                     ${subtitleHtml}
                 </div>
             </div>
             `;
         }).join('');
-        if(list.length === 0) cardsHtml = `<div class="col-span-2 text-center text-white/30 text-sm mt-10">当前筛选条件下未找到相关酒款</div>`;
+        if(list.length === 0) cardsHtml = `<div class="col-span-2 text-center text-white/30 text-sm mt-10">未找到相关酒款或配方材料</div>`;
         if(document.getElementById('recipeGrid')) document.getElementById('recipeGrid').innerHTML = cardsHtml;
     }
 
     function renderCabinet() {
         let html = `
-        <div class="flex flex-col w-full h-full">
+        <div class="flex flex-col w-full h-full relative z-10">
             <div class="px-6 pt-[60px] pb-2 flex justify-between items-end relative">
-                <div class="text-[34px] font-black text-white tracking-tight">专属酒柜</div>
-                <div class="flex gap-2 mb-1.5">
-                    <div onclick="openShoppingModal()" class="text-[12px] font-bold text-white bg-white/10 px-3 py-1 rounded-full cursor-pointer active:scale-95 transition-all border border-white/20 relative">🛒 采购单
-                        ${shoppingList.length > 0 ? `<div class="absolute -top-1 -right-1 w-3 h-3 bg-ios-red rounded-full shadow-lg"></div>` : ''}
-                    </div>
-                    <div onclick="clearCabinet()" class="text-[12px] font-bold text-ios-gold px-3 py-1 rounded-full bg-ios-gold/10 cursor-pointer active:scale-95 transition-all">清空</div>
+                <div class="flex flex-col">
+                    <span class="text-[12px] font-bold text-white/40 tracking-[0.2em] uppercase mb-1">My Cabinet</span>
+                    <div class="text-[38px] font-black text-white tracking-tighter">专属酒柜</div>
                 </div>
+                <div onclick="clearCabinet()" class="text-[13px] font-bold text-ios-gold mb-2 px-4 py-1.5 rounded-full bg-ios-gold/10 cursor-pointer active:scale-95 transition-all backdrop-blur-md">清空</div>
             </div>
-            <div class="px-6 mb-4 mt-2">
-                <div class="bg-[#1C1C1E]/80 backdrop-blur-md rounded-[12px] px-4 py-2.5 flex items-center border border-white/5 focus-within:border-ios-gold focus-within:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all duration-300">
+            <div class="px-6 mb-4 mt-4">
+                <div class="glass-card rounded-[16px] px-4 py-3 flex items-center border border-white/5 focus-within:border-ios-gold focus-within:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all duration-300">
                     <span class="mr-3 opacity-40 text-lg">🔍</span>
                     <input type="text" id="cabinetSearchInput" oninput="renderCabinetHTMLOnly()" placeholder="搜索你想加入酒柜的材料..." class="bg-transparent outline-none w-full text-white text-[15px] font-medium placeholder-white/30">
                 </div>
             </div>
             <div class="flex-1 overflow-y-auto pb-40" id="cabinetContent"></div>
+            
+            <div class="absolute bottom-28 right-6 z-50">
+                <button onclick="openShoppingModal()" class="w-14 h-14 bg-white text-black rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(255,255,255,0.3)] active:scale-90 transition-transform relative">
+                    <span class="text-2xl">🛒</span>
+                    ${shoppingList.length > 0 ? `<div class="absolute top-0 right-0 w-4 h-4 bg-ios-red rounded-full border-2 border-white"></div>` : ''}
+                </button>
+            </div>
         </div>`;
         document.getElementById('appContent').innerHTML = html;
         renderCabinetHTMLOnly();
@@ -758,8 +741,8 @@
         let filteredItems = cabinetItems;
         if (kw) filteredItems = cabinetItems.filter(item => item.name.toLowerCase().includes(kw) || item.kw.some(k => k.toLowerCase().includes(kw)));
 
-        let contentHtml = `<div class="px-6 mb-4 text-ios-gray text-sm font-medium tracking-wide">点选持有的材料，探索配对可能。</div>`;
-        contentHtml += `<div class="px-6 flex flex-wrap gap-2.5 mb-10" id="cabinetTagsArea">`;
+        let contentHtml = `<div class="px-6 mb-5 text-white/50 text-sm font-medium tracking-wide">点选持有的材料，探索配对可能。</div>`;
+        contentHtml += `<div class="px-6 flex flex-wrap gap-3 mb-10" id="cabinetTagsArea">`;
         filteredItems.forEach((item, i) => {
             const isSel = myCabinet.includes(item.name);
             contentHtml += `<div class="ing-tag stagger-item ${isSel?'selected':''}" style="animation-delay: ${Math.min(i*0.02, 0.3)}s" onclick="toggleCabinetItem('${item.name}', this)">${item.name}</div>`;
@@ -788,7 +771,7 @@
         showMsg(addedCount > 0 ? '材料已加入采购单 🛒' : '材料已在采购单中', addedCount > 0);
         
         const html = document.getElementById('appContent').innerHTML;
-        if(addedCount > 0 && !html.includes('absolute -top-1 -right-1')) renderCabinet(); 
+        if(addedCount > 0 && !html.includes('w-4 h-4 bg-ios-red')) renderCabinet(); 
     }
 
     window.updateCabinetResults = function() {
@@ -806,100 +789,102 @@
             }
         });
 
-        // 新增：智能材料平替知识库
         const subMap = [
-            { k: '君度', v: '三罗或普通橙皮酒' },
-            { k: '三罗', v: '君度或普通橙皮酒' },
-            { k: '橙酒', v: '君度或三罗' },
-            { k: '青柠', v: '柠檬或少许白醋' },
-            { k: '柠檬', v: '青柠或酸味果汁' },
-            { k: '苏打', v: '雪碧(减糖)或气泡水' },
-            { k: '糖浆', v: '白砂糖+水化开或蜂蜜' },
-            { k: '红石榴', v: '蔓越莓汁或糖浆' },
-            { k: '干味美思', v: '干白葡萄酒' },
-            { k: '味美思', v: '干白或红葡萄酒' },
-            { k: '咖啡利口酒', v: '浓缩咖啡+伏特加+糖' },
-            { k: '黑樱桃', v: '樱桃果酱汁+少许烈酒' },
-            { k: '苦艾酒', v: '茴香酒(Pastis)' },
-            { k: '苦精', v: '泡过陈皮的烈酒' },
-            { k: '姜汁', v: '雪碧+鲜姜泥' },
-            { k: '可乐', v: '其他气泡饮料' },
-            { k: '起泡酒', v: '苏打水+白葡萄酒' },
-            { k: '香槟', v: '干型起泡酒' },
-            { k: '干邑', v: '普通白兰地' },
-            { k: '百香果', v: '芒果汁+少许柠檬' }
+            { k: '君度', v: '三罗或普通橙皮酒' }, { k: '三罗', v: '君度或普通橙皮酒' }, { k: '橙酒', v: '君度或三罗' }, { k: '青柠', v: '柠檬或白醋' },
+            { k: '柠檬', v: '青柠或酸果汁' }, { k: '苏打', v: '减糖雪碧或气泡水' }, { k: '糖浆', v: '白糖+水或蜂蜜' }, { k: '红石榴', v: '蔓越莓或糖浆' },
+            { k: '干味美思', v: '干白葡萄酒' }, { k: '味美思', v: '干白或红葡萄酒' }, { k: '咖啡利口酒', v: '浓缩咖啡+伏特加' }, { k: '黑樱桃', v: '樱桃果酱+烈酒' },
+            { k: '苦艾酒', v: '茴香酒(Pastis)' }, { k: '苦精', v: '陈皮浸泡烈酒' }, { k: '姜汁', v: '雪碧+鲜姜泥' }, { k: '可乐', v: '其他气泡饮料' },
+            { k: '起泡酒', v: '苏打水+白葡萄酒' }, { k: '香槟', v: '干型起泡酒' }, { k: '干邑', v: '普通白兰地' }, { k: '百香果', v: '芒果汁+少许柠檬' }
         ];
 
         let contentHtml = `<div class="px-6 pb-20">`;
         if(perfect.length > 0) {
-            contentHtml += `<div class="text-[#FA2D48] font-bold text-lg mb-4 tracking-wide">✨ 可直接调制 (${perfect.length})</div><div class="grid grid-cols-2 gap-4 mb-10">`;
+            contentHtml += `<div class="text-[#FA2D48] font-bold text-[16px] mb-4 tracking-wider uppercase">✨ 完美匹配 (${perfect.length})</div><div class="grid grid-cols-2 gap-4 mb-10">`;
             perfect.forEach((d,i) => { 
-                contentHtml += `<div class="cover-card stagger-item shadow-xl flex flex-col justify-center items-center p-4 relative" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.04, 0.6)}s" onclick="openDetail('${d.id}')">
-                    <div class="absolute -right-4 -top-4 text-[110px] font-black italic text-white/5 pointer-events-none mix-blend-overlay">${d.en.charAt(0)}</div>
-                    <div class="relative z-10 w-full flex flex-col items-center justify-center text-center h-full">
-                        <div class="text-[24px] font-art font-black leading-tight drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] text-white tracking-[0.15em]">${d.zh}</div>
+                contentHtml += `<div class="cover-card-centered stagger-item group h-[210px] cursor-pointer" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.04, 0.6)}s" onclick="openDetail('${d.id}')">
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div class="w-32 h-32 blur-[40px] opacity-40 rounded-full transition-opacity duration-500 group-hover:opacity-70" style="background: ${d.themeColor}"></div>
+                    </div>
+                    <div class="w-[72px] h-[72px] mb-3 opacity-90 drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)] z-10 transform transition-transform duration-500 group-hover:scale-110">
+                        ${window.getGlassSvgCover(d.glass, d.themeColor)}
+                    </div>
+                    <div class="z-10 w-full flex flex-col items-center text-center">
+                        <div class="text-[16px] font-bold text-white drop-shadow-md truncate w-full px-1">${d.zh}</div>
+                        <div class="text-[10px] font-medium text-white/50 truncate tracking-wide uppercase mt-1 w-full px-2">${d.en}</div>
                     </div>
                 </div>`; 
             });
             contentHtml += `</div>`;
         }
         if(missing1.length > 0) {
-            contentHtml += `<div class="text-white/70 font-bold text-lg mb-4 tracking-wide">🛒 缺少 1 种材料 (${missing1.length})</div><div class="grid grid-cols-2 gap-4 mb-10">`;
+            contentHtml += `<div class="text-white/70 font-bold text-[16px] mb-4 tracking-wider">🛒 缺少 1 种材料 (${missing1.length})</div><div class="grid grid-cols-2 gap-4 mb-10">`;
             missing1.slice(0,10).forEach((d,i) => { 
                 let missingNames = Array.from(d.reqCats).filter(c => !myCabinet.includes(c));
                 let missingCat = missingNames[0];
-                
-                // 深入原配方：精准找出导致该分类缺失的具体材料名字
                 let actualMissingIng = d.ingredients.find(ing => cabinetItems.find(c => c.name === missingCat)?.kw.some(k => ing.includes(k))) || missingCat;
-                
-                let subHint = '';
                 let foundSub = subMap.find(s => actualMissingIng.includes(s.k));
-                if(foundSub) {
-                    subHint = `<div class="text-[9px] text-[#64D2FF] font-bold bg-[#0A84FF]/20 px-1.5 py-0.5 rounded border border-[#0A84FF]/30 mt-1 max-w-[95%] truncate backdrop-blur-md shadow-lg">💡 平替: ${foundSub.v}</div>`;
-                }
+                let subHint = foundSub ? `<div class="text-[9px] text-[#64D2FF] font-bold bg-[#0A84FF]/20 px-1.5 py-0.5 rounded border border-[#0A84FF]/30 mt-1 max-w-full truncate backdrop-blur-md shadow-sm">平替: ${foundSub.v}</div>` : '';
 
-                contentHtml += `<div class="cover-card stagger-item shadow-xl flex flex-col justify-center items-center p-4 relative opacity-90 grayscale-[20%]" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.04, 0.6)}s" onclick="openDetail('${d.id}')">
-                    <div class="absolute -right-4 -top-4 text-[110px] font-black italic text-white/5 pointer-events-none mix-blend-overlay">${d.en.charAt(0)}</div>
-                    <div class="relative z-10 w-full flex flex-col items-center justify-center text-center h-full pb-6">
-                        <div class="text-[22px] font-art font-black leading-tight drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] text-white tracking-[0.15em]">${d.zh}</div>
+                contentHtml += `<div class="cover-card-centered stagger-item group h-[230px] opacity-95 grayscale-[15%] cursor-pointer" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.04, 0.6)}s" onclick="openDetail('${d.id}')">
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div class="w-32 h-32 blur-[40px] opacity-20 rounded-full transition-opacity duration-500 group-hover:opacity-40" style="background: ${d.themeColor}"></div>
                     </div>
-                    <div class="absolute bottom-3 left-0 w-full flex flex-col items-center justify-center z-10 px-1">
-                        <div class="text-[10px] text-[#FA2D48] font-medium bg-black/80 px-2 py-0.5 rounded border border-[#FA2D48]/30 max-w-[95%] truncate backdrop-blur-md shadow-lg">缺: ${missingCat}</div>
-                        ${subHint}
+                    <button onclick="addMissingToCart('${missingNames.join(',')}', event)" class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full border border-white/20 z-20 text-[13px] hover:bg-white/20 active:scale-90 transition-all shadow-md text-white">🛒</button>
+                    
+                    <div class="w-[60px] h-[60px] mb-2 opacity-85 drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)] z-10 transform transition-transform duration-500 group-hover:scale-110">
+                        ${window.getGlassSvgCover(d.glass, d.themeColor)}
                     </div>
-                    <button onclick="addMissingToCart('${missingNames.join(',')}', event)" class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-black/40 backdrop-blur-md rounded-full border border-white/20 z-20 text-sm hover:bg-black/60 active:scale-90 transition-all">🛒</button>
+                    <div class="z-10 w-full flex flex-col items-center text-center">
+                        <div class="text-[15px] font-bold text-white drop-shadow-md truncate w-full px-1">${d.zh}</div>
+                        <div class="text-[9px] font-medium text-white/50 truncate tracking-wide uppercase mt-0.5 mb-2 w-full px-1">${d.en}</div>
+                        <div class="flex flex-col items-center w-full px-1">
+                            <div class="text-[9px] text-[#FA2D48] font-bold bg-white/10 px-2 py-0.5 rounded border border-[#FA2D48]/30 max-w-full truncate backdrop-blur-md shadow-sm">缺: ${missingCat}</div>
+                            ${subHint}
+                        </div>
+                    </div>
                 </div>`; 
             });
             contentHtml += `</div>`;
         }
         if(missing2.length > 0) {
-            contentHtml += `<div class="text-white/40 font-bold text-lg mb-4 tracking-wide">🛒 缺少 2 种材料 (${missing2.length})</div><div class="grid grid-cols-2 gap-4 mb-10">`;
+            contentHtml += `<div class="text-white/40 font-bold text-[16px] mb-4 tracking-wider">🛒 缺少 2 种材料 (${missing2.length})</div><div class="grid grid-cols-2 gap-4 mb-10">`;
             missing2.slice(0,10).forEach((d,i) => { 
                 let missingNames = Array.from(d.reqCats).filter(c => !myCabinet.includes(c));
-                contentHtml += `<div class="cover-card stagger-item shadow-xl flex flex-col justify-center items-center p-4 relative opacity-60 grayscale-[40%]" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.04, 0.6)}s" onclick="openDetail('${d.id}')">
-                    <div class="absolute -right-4 -top-4 text-[110px] font-black italic text-white/5 pointer-events-none mix-blend-overlay">${d.en.charAt(0)}</div>
-                    <div class="relative z-10 w-full flex flex-col items-center justify-center text-center h-full pb-4">
-                        <div class="text-[22px] font-art font-black leading-tight drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] text-white tracking-[0.15em]">${d.zh}</div>
+                contentHtml += `<div class="cover-card-centered stagger-item group h-[220px] opacity-80 grayscale-[30%] cursor-pointer" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.04, 0.6)}s" onclick="openDetail('${d.id}')">
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div class="w-28 h-28 blur-[40px] opacity-15 rounded-full transition-opacity duration-500 group-hover:opacity-30" style="background: ${d.themeColor}"></div>
                     </div>
-                    <div class="absolute bottom-4 left-0 w-full flex justify-center z-10">
-                        <div class="text-[9px] text-white/80 font-medium bg-black/80 px-2 py-0.5 rounded border border-white/20 max-w-[85%] truncate backdrop-blur-md shadow-lg">缺: ${missingNames.join(', ')}</div>
+                    <button onclick="addMissingToCart('${missingNames.join(',')}', event)" class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full border border-white/20 z-20 text-[13px] hover:bg-white/20 active:scale-90 transition-all shadow-md text-white">🛒</button>
+                    
+                    <div class="w-[55px] h-[55px] mb-2 opacity-80 drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)] z-10 transform transition-transform duration-500 group-hover:scale-110">
+                        ${window.getGlassSvgCover(d.glass, d.themeColor)}
                     </div>
-                    <button onclick="addMissingToCart('${missingNames.join(',')}', event)" class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-black/40 backdrop-blur-md rounded-full border border-white/20 z-20 text-sm hover:bg-black/60 active:scale-90 transition-all">🛒</button>
+                    <div class="z-10 w-full flex flex-col items-center text-center">
+                        <div class="text-[15px] font-bold text-white drop-shadow-md truncate w-full px-1">${d.zh}</div>
+                        <div class="text-[9px] font-medium text-white/50 truncate tracking-wide uppercase mt-0.5 mb-2 w-full px-1">${d.en}</div>
+                        <div class="text-[9px] text-white/80 font-bold bg-white/10 px-2 py-0.5 rounded border border-white/20 max-w-full truncate backdrop-blur-md shadow-sm">缺: ${missingNames.join(', ')}</div>
+                    </div>
                 </div>`; 
             });
             contentHtml += `</div>`;
         }
         if(missing3.length > 0) {
-            contentHtml += `<div class="text-white/20 font-bold text-lg mb-4 tracking-wide">🛒 缺少 3 种材料 (${missing3.length})</div><div class="grid grid-cols-2 gap-4 mb-10">`;
+            contentHtml += `<div class="text-white/20 font-bold text-[16px] mb-4 tracking-wider">🛒 缺少 3 种材料 (${missing3.length})</div><div class="grid grid-cols-2 gap-4 mb-10">`;
             missing3.slice(0,10).forEach((d,i) => { 
                 let missingNames = Array.from(d.reqCats).filter(c => !myCabinet.includes(c));
-                contentHtml += `<div class="cover-card stagger-item shadow-xl flex flex-col justify-center items-center p-4 relative opacity-40 grayscale-[60%]" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.04, 0.6)}s" onclick="openDetail('${d.id}')">
-                    <div class="absolute -right-4 -top-4 text-[110px] font-black italic text-white/5 pointer-events-none mix-blend-overlay">${d.en.charAt(0)}</div>
-                    <div class="relative z-10 w-full flex flex-col items-center justify-center text-center h-full pb-4">
-                        <div class="text-[22px] font-art font-black leading-tight drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] text-white tracking-[0.15em]">${d.zh}</div>
+                contentHtml += `<div class="cover-card-centered stagger-item group h-[220px] opacity-60 grayscale-[50%] cursor-pointer" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.04, 0.6)}s" onclick="openDetail('${d.id}')">
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div class="w-24 h-24 blur-[40px] opacity-10 rounded-full transition-opacity duration-500 group-hover:opacity-20" style="background: ${d.themeColor}"></div>
                     </div>
-                    <div class="absolute bottom-4 left-0 w-full flex justify-center z-10">
-                        <div class="text-[9px] text-white/60 font-medium bg-black/80 px-2 py-0.5 rounded border border-white/10 max-w-[85%] truncate backdrop-blur-md shadow-lg">缺: ${missingNames.join(', ')}</div>
+                    <button onclick="addMissingToCart('${missingNames.join(',')}', event)" class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full border border-white/20 z-20 text-[13px] hover:bg-white/20 active:scale-90 transition-all shadow-md text-white">🛒</button>
+                    
+                    <div class="w-[50px] h-[50px] mb-2 opacity-70 drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)] z-10 transform transition-transform duration-500 group-hover:scale-110">
+                        ${window.getGlassSvgCover(d.glass, d.themeColor)}
+                    </div>
+                    <div class="z-10 w-full flex flex-col items-center text-center">
+                        <div class="text-[14px] font-bold text-white drop-shadow-md truncate w-full px-1">${d.zh}</div>
+                        <div class="text-[9px] font-medium text-white/50 truncate tracking-wide uppercase mt-0.5 mb-2 w-full px-1">${d.en}</div>
+                        <div class="text-[9px] text-white/60 font-bold bg-white/10 px-2 py-0.5 rounded border border-white/10 max-w-full truncate backdrop-blur-md shadow-sm">缺: ${missingNames.join(', ')}</div>
                     </div>
                 </div>`; 
             });
@@ -907,7 +892,7 @@
         } else if (missing1.length > 0 || missing2.length > 0) { contentHtml += `<div class="pb-10"></div>`; }
         
         if(perfect.length === 0 && missing1.length === 0 && missing2.length === 0 && missing3.length === 0 && myCabinet.length > 0) { contentHtml += `<div class="text-center text-ios-gray mt-10 pb-10">当前组合暂无接近的酒款</div>`; } 
-        else if (myCabinet.length === 0) { contentHtml += `<div class="text-center text-ios-gray mt-10 pb-10">请先在上方点选您拥有的材料</div>`; }
+        else if (myCabinet.length === 0) { contentHtml += `<div class="text-center text-white/40 mt-10 pb-10">请先在上方点选您拥有的材料</div>`; }
         contentHtml += `</div>`;
         
         const resultsArea = document.getElementById('cabinetResultsArea');
@@ -951,7 +936,7 @@
         if(c.dataset.checked === '1') {
             c.dataset.checked = '0';
             c.style.backgroundColor = '';
-            c.style.borderColor = '';
+            c.style.borderColor = 'rgba(255,255,255,0.3)';
             svg.style.opacity = '0';
             textWrap.classList.remove('opacity-30', 'line-through');
             shoppingCheckedList = shoppingCheckedList.filter(n => n !== item);
@@ -970,6 +955,10 @@
         if(clearBtn) {
             clearBtn.style.display = hasChecked ? 'block' : 'none';
         }
+
+        setTimeout(() => {
+            renderShoppingContent();
+        }, 350);
     }
 
     window.clearCheckedShoppingItems = function() {
@@ -992,12 +981,12 @@
     function renderShoppingContent() {
         const modal = document.getElementById('shoppingModal');
         let html = `
-            <div class="flex items-center justify-between px-6 pb-3 relative z-20 text-white border-b border-white/10 bg-[#000]/80 backdrop-blur-md" style="padding-top: calc(16px + env(safe-area-inset-top, 24px));">
+            <div class="flex items-center justify-between px-6 pb-3 relative z-20 text-white border-b border-white/10 bg-[#050505]/90 backdrop-blur-md" style="padding-top: calc(16px + env(safe-area-inset-top, 24px));">
                 <button onclick="closeShoppingModal()" class="text-ios-blue text-[16px] p-2 -ml-2 font-medium active:opacity-50 transition-opacity">完成</button>
                 <div class="font-bold text-[16px] tracking-wide">我的采购清单</div>
                 <button onclick="clearShoppingList()" class="text-ios-red text-[14px] p-2 -mr-2 font-medium active:opacity-50 transition-opacity">清空全部</button>
             </div>
-            <div class="flex-1 overflow-y-auto px-6 py-6 space-y-3 text-white pb-32">`;
+            <div class="flex-1 overflow-y-auto px-6 py-6 text-white pb-32">`;
 
         if (shoppingList.length === 0) {
             html += `<div class="text-center text-white/30 text-sm mt-20">清单空空如也<br><br>去酒柜看看有什么缺少的材料吧！</div>`;
@@ -1008,20 +997,19 @@
                 <div id="clearCheckedBtn" onclick="clearCheckedShoppingItems()" class="text-[12px] text-ios-blue cursor-pointer active:opacity-50 font-bold bg-ios-blue/10 px-3 py-1 rounded-full border border-ios-blue/20" style="display: ${shoppingCheckedList.length > 0 ? 'block' : 'none'};">清理已购</div>
             </div>`;
             
-            // 采购单智能排序：未购买的在上，划掉的在下
             const uncheckedItems = shoppingList.filter(item => !shoppingCheckedList.includes(item));
             const checkedItems = shoppingList.filter(item => shoppingCheckedList.includes(item));
 
             const renderItem = (item, isChecked) => {
-                const inlineStyle = isChecked ? `background-color: #0A84FF; border-color: #0A84FF;` : '';
+                const inlineStyle = isChecked ? `background-color: #0A84FF; border-color: #0A84FF;` : 'border-color: rgba(255,255,255,0.3);';
                 const svgOp = isChecked ? '1' : '0';
                 const textClass = isChecked ? 'opacity-30 line-through' : '';
                 return `
-                <div onclick="toggleShoppingItem(this, '${item}')" class="bg-[#1C1C1E] border border-white/5 rounded-2xl p-4 flex items-center justify-between shadow-lg active:scale-95 transition-all cursor-pointer">
+                <div onclick="toggleShoppingItem(this, '${item}')" class="glass-card rounded-[20px] p-4 flex items-center justify-between active:scale-95 transition-all cursor-pointer mb-3">
                     <div class="shop-text-wrap transition-all duration-300 ${textClass}">
                         <span class="font-bold text-[16px]">${item}</span>
                     </div>
-                    <div class="chk w-[24px] h-[24px] rounded-full border border-white/30 flex items-center justify-center transition-all duration-300 flex-shrink-0" data-checked="${isChecked ? '1' : '0'}" style="${inlineStyle}">
+                    <div class="chk w-[24px] h-[24px] rounded-full border flex items-center justify-center transition-all duration-300 flex-shrink-0" data-checked="${isChecked ? '1' : '0'}" style="${inlineStyle}">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 text-white transition-opacity duration-300 fill-current" style="opacity: ${svgOp}"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
                     </div>
                 </div>`;
@@ -1030,7 +1018,7 @@
             uncheckedItems.forEach(item => html += renderItem(item, false));
             
             if(checkedItems.length > 0 && uncheckedItems.length > 0) {
-                html += `<div class="w-full h-px bg-white/10 my-4 border-t border-dashed border-white/20"></div>`;
+                html += `<div class="w-full h-px bg-white/10 my-6 border-t border-dashed border-white/20 relative flex justify-center"><span class="absolute -top-2.5 bg-[#050505] px-3 text-[10px] text-white/40 tracking-widest font-bold z-10">已采购项目</span></div>`;
             }
 
             checkedItems.forEach(item => html += renderItem(item, true));
@@ -1068,27 +1056,27 @@
             
             contentHtml = `
                 <div class="text-[12px] text-white/50 mb-2 mt-4 leading-relaxed">你的所有配方、收藏、笔记与酒柜数据已打包为以下特征码，请复制并妥善保存：</div>
-                <textarea readonly class="w-full bg-black/50 border border-white/10 rounded-2xl p-4 text-[11px] font-mono text-white/70 h-40 break-all resize-none outline-none shadow-inner">${exportStr}</textarea>
-                <button onclick="copyExportData('${exportStr}')" class="w-full mt-4 py-3.5 bg-ios-blue text-white rounded-xl font-bold active:scale-95 transition-all shadow-[0_4px_15px_rgba(10,132,255,0.4)]">复制特征码</button>
+                <textarea readonly class="w-full glass-card border border-white/10 rounded-[20px] p-4 text-[11px] font-mono text-white/70 h-40 break-all resize-none outline-none shadow-inner">${exportStr}</textarea>
+                <button onclick="copyExportData('${exportStr}')" class="w-full mt-4 py-4 bg-ios-blue text-white rounded-xl font-bold active:scale-95 transition-all shadow-[0_4px_15px_rgba(10,132,255,0.4)]">复制特征码</button>
             `;
         } else {
             contentHtml = `
                 <div class="text-[12px] text-ios-red mb-2 mt-4 leading-relaxed font-bold">⚠️ 警告：导入新特征码将覆盖当前设备上的所有本地数据。</div>
-                <textarea id="importInput" placeholder="在此粘贴你的备份特征码..." class="w-full bg-black/50 border border-white/10 rounded-2xl p-4 text-[12px] font-mono text-white h-40 resize-none outline-none shadow-inner focus:border-ios-gold transition-all"></textarea>
-                <button onclick="confirmImportData()" class="w-full mt-4 py-3.5 bg-ios-gold text-black rounded-xl font-bold active:scale-95 transition-all shadow-[0_4px_15px_rgba(212,175,55,0.4)]">立即导入并覆盖</button>
+                <textarea id="importInput" placeholder="在此粘贴你的备份特征码..." class="w-full glass-card border border-white/10 rounded-[20px] p-4 text-[12px] font-mono text-white h-40 resize-none outline-none shadow-inner focus:border-ios-gold transition-all"></textarea>
+                <button onclick="confirmImportData()" class="w-full mt-4 py-4 bg-ios-gold text-black rounded-xl font-black active:scale-95 transition-all shadow-[0_4px_15px_rgba(212,175,55,0.4)]">立即导入并覆盖</button>
             `;
         }
 
         modal.innerHTML = `
-            <div class="flex items-center justify-between px-6 pb-3 relative z-20 text-white border-b border-white/10 bg-[#000]/80 backdrop-blur-md" style="padding-top: calc(16px + env(safe-area-inset-top, 24px));">
+            <div class="flex items-center justify-between px-6 pb-3 relative z-20 text-white border-b border-white/10 bg-[#050505]/90 backdrop-blur-md" style="padding-top: calc(16px + env(safe-area-inset-top, 24px));">
                 <button onclick="closeDataModal()" class="text-ios-blue text-[16px] p-2 -ml-2 font-medium active:opacity-50 transition-opacity">完成</button>
                 <div class="font-bold text-[16px] tracking-wide">数据迁移</div>
                 <div class="w-10"></div>
             </div>
             <div class="flex-1 px-6 py-6 text-white pb-32">
-                <div class="flex bg-white/10 p-1 rounded-xl mb-6">
-                    <button onclick="renderDataModal('export')" class="flex-1 py-1.5 text-sm font-bold rounded-lg transition-all ${mode==='export'?'bg-[#1C1C1E] shadow-sm':'text-white/50'}">导出备份</button>
-                    <button onclick="renderDataModal('import')" class="flex-1 py-1.5 text-sm font-bold rounded-lg transition-all ${mode==='import'?'bg-[#1C1C1E] shadow-sm':'text-white/50'}">恢复数据</button>
+                <div class="flex bg-white/5 p-1 rounded-2xl mb-6 border border-white/10">
+                    <button onclick="renderDataModal('export')" class="flex-1 py-2 text-sm font-bold rounded-xl transition-all ${mode==='export'?'bg-[#2C2C2E] shadow-sm':'text-white/50 hover:text-white/80'}">导出备份</button>
+                    <button onclick="renderDataModal('import')" class="flex-1 py-2 text-sm font-bold rounded-xl transition-all ${mode==='import'?'bg-[#2C2C2E] shadow-sm':'text-white/50 hover:text-white/80'}">恢复数据</button>
                 </div>
                 ${contentHtml}
             </div>
@@ -1199,64 +1187,73 @@
 
     function renderShuffle() {
         document.getElementById('appContent').innerHTML = `
-        <div class="flex flex-col w-full h-full relative">
+        <div class="flex flex-col w-full h-full relative z-10">
             <div class="px-6 pt-[60px] pb-6 relative z-10">
-                <div class="text-[34px] font-black text-white tracking-tight leading-tight">灵感探索</div>
-                <div class="text-white/50 text-[13px] font-medium mt-1 tracking-wide">碰撞未知，调配你的专属微醺。</div>
+                <div class="flex flex-col">
+                    <span class="text-[12px] font-bold text-white/40 tracking-[0.2em] uppercase mb-1">Discover</span>
+                    <div class="text-[38px] font-black text-white tracking-tighter">灵感探索</div>
+                </div>
             </div>
 
             <div class="px-6 space-y-6 pb-40 relative z-10">
-                <div class="relative w-full rounded-[32px] p-[1.5px] overflow-hidden group shadow-2xl">
+                <!-- 1. AI 灵魂特调 -->
+                <div class="relative w-full rounded-[32px] p-[1px] overflow-hidden group shadow-2xl">
                     <div class="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_0%,rgba(10,132,255,0.7)_20%,rgba(191,90,242,0.7)_40%,rgba(255,55,95,0.7)_60%,transparent_80%)] animate-[spin_4s_linear_infinite] opacity-30 blur-md transition-opacity duration-500 group-focus-within:opacity-70"></div>
                     <div class="absolute inset-0 bg-gradient-to-br from-[#0A84FF]/20 via-[#BF5AF2]/20 to-[#FF375F]/20 opacity-30 group-focus-within:opacity-50 transition-opacity duration-500 blur-2xl"></div>
 
-                    <div class="relative bg-[#1C1C1E]/80 backdrop-blur-3xl rounded-[30.5px] p-6 z-10 border border-white/5 flex flex-col h-full">
-                        <div class="flex items-center space-x-3 mb-5">
-                            <div class="w-10 h-10 rounded-full bg-black/40 border border-white/10 flex items-center justify-center shadow-inner relative overflow-hidden">
+                    <div class="relative glass-card rounded-[31px] p-6 z-10 border-0 flex flex-col h-full bg-[#1C1C1E]/80">
+                        <div class="flex items-center space-x-4 mb-5">
+                            <div class="w-12 h-12 rounded-full bg-black/40 border border-white/10 flex items-center justify-center shadow-inner relative overflow-hidden">
                                 <div class="absolute inset-0 bg-[conic-gradient(from_0deg,#0A84FF,#BF5AF2,#FF375F,#0A84FF)] animate-[spin_3s_linear_infinite] opacity-30 blur-sm"></div>
-                                <span class="text-white text-[16px] relative z-10 mt-[2px]">✨</span>
+                                <span class="text-white text-[20px] relative z-10">✨</span>
                             </div>
                             <div>
-                                <div class="text-[17px] font-bold text-white tracking-wide leading-tight">AI 灵魂特调</div>
+                                <div class="text-[18px] font-black text-white tracking-wide leading-tight">AI 灵魂特调</div>
                                 <div class="text-[10px] font-bold text-white/40 tracking-widest uppercase mt-0.5">Powered by DeepSeek</div>
                             </div>
                         </div>
 
                         <div class="mb-5 relative">
-                            <textarea id="aiMoodInput" rows="2" placeholder="窗外下着暴雨，想听着爵士乐放空..." class="w-full bg-black/30 border border-white/5 rounded-[18px] p-4 text-[14px] text-white placeholder-white/30 outline-none focus:bg-black/50 focus:border-white/20 transition-all duration-300 resize-none leading-relaxed shadow-inner"></textarea>
+                            <textarea id="aiMoodInput" rows="2" placeholder="窗外下着暴雨，想听着爵士乐放空..." class="w-full bg-black/30 border border-white/5 rounded-[20px] p-4 text-[14px] text-white placeholder-white/30 outline-none focus:bg-black/50 focus:border-white/20 transition-all duration-300 resize-none leading-relaxed shadow-inner"></textarea>
                         </div>
 
-                        <button onclick="callAIBartender()" class="w-full py-3.5 rounded-[16px] bg-white/5 hover:bg-white/10 active:scale-[0.98] transition-all duration-300 flex justify-center items-center backdrop-blur-md border border-white/5 overflow-hidden relative shadow-md">
+                        <button onclick="callAIBartender()" class="w-full py-4 rounded-[18px] bg-white/5 hover:bg-white/10 active:scale-[0.98] transition-all duration-300 flex justify-center items-center backdrop-blur-md border border-white/5 overflow-hidden relative shadow-md">
                             <span class="font-bold text-[15px] tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-[#64D2FF] via-[#BF5AF2] to-[#FF375F]">生成专属微醺</span>
                         </button>
                     </div>
                 </div>
 
-                <div class="relative w-full rounded-[32px] p-[1.5px] overflow-hidden group shadow-2xl cursor-pointer" onclick="goLucky()">
+                <!-- 2. 命运盲盒 -->
+                <div class="relative w-full rounded-[32px] p-[1px] overflow-hidden group shadow-2xl cursor-pointer" onclick="goLucky()">
                     <div class="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_0%,rgba(212,175,55,0.7)_20%,rgba(255,159,10,0.7)_40%,rgba(250,45,72,0.7)_60%,transparent_80%)] animate-[spin_4s_linear_infinite] opacity-30 blur-md transition-opacity duration-500 group-active:opacity-70 group-hover:opacity-70"></div>
                     <div class="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/20 via-[#FF9F0A]/20 to-[#FA2D48]/20 opacity-30 group-active:opacity-50 transition-opacity duration-500 blur-2xl"></div>
 
-                    <div class="relative bg-[#1C1C1E]/80 backdrop-blur-3xl rounded-[30.5px] p-6 z-10 border border-white/5 flex flex-col items-center justify-center text-center h-full active:scale-[0.98] transition-transform duration-300 py-10">
-                        <div class="w-20 h-20 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-4xl shadow-inner mb-4 relative overflow-hidden">
+                    <div class="relative glass-card rounded-[31px] p-6 z-10 border-0 flex items-center h-full active:scale-[0.98] transition-transform duration-300 bg-[#1C1C1E]/80">
+                        <div class="w-16 h-16 rounded-[20px] bg-black/40 border border-white/10 flex items-center justify-center text-3xl shadow-inner mr-5 relative overflow-hidden shrink-0">
                             <div class="absolute inset-0 bg-[conic-gradient(from_0deg,#D4AF37,#FF9F0A,#FA2D48,#D4AF37)] animate-[spin_3s_linear_infinite] opacity-30 blur-sm"></div>
                             <span class="relative z-10 transition-transform duration-500 inline-block" id="luckyDice">🎲</span>
                         </div>
-                        <div class="text-[20px] font-bold text-white tracking-wide leading-tight mb-2">命运盲盒</div>
-                        <div class="text-[13px] text-white/50 font-medium">按下转动，经典配方随机抽取</div>
+                        <div class="flex flex-col">
+                            <div class="text-[20px] font-black text-white tracking-wide leading-tight mb-1">命运盲盒</div>
+                            <div class="text-[12px] text-white/50 font-medium">按下转动，经典配方随机抽取</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="relative w-full rounded-[32px] p-[1.5px] overflow-hidden group shadow-2xl cursor-pointer" onclick="openDIYModal()">
+                <!-- 3. 创作工坊 -->
+                <div class="relative w-full rounded-[32px] p-[1px] overflow-hidden group shadow-2xl cursor-pointer" onclick="openDIYModal()">
                     <div class="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_0%,rgba(48,209,88,0.7)_20%,rgba(10,132,255,0.7)_40%,rgba(94,92,230,0.7)_60%,transparent_80%)] animate-[spin_4s_linear_infinite] opacity-30 blur-md transition-opacity duration-500 group-active:opacity-70 group-hover:opacity-70"></div>
                     <div class="absolute inset-0 bg-gradient-to-br from-[#30D158]/20 via-[#0A84FF]/20 to-[#5E5CE6]/20 opacity-30 group-active:opacity-50 transition-opacity duration-500 blur-2xl"></div>
 
-                    <div class="relative bg-[#1C1C1E]/80 backdrop-blur-3xl rounded-[30.5px] p-6 z-10 border border-white/5 flex flex-col items-center justify-center text-center h-full active:scale-[0.98] transition-transform duration-300 py-10">
-                        <div class="w-20 h-20 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-4xl shadow-inner mb-4 relative overflow-hidden">
+                    <div class="relative glass-card rounded-[31px] p-6 z-10 border-0 flex items-center h-full active:scale-[0.98] transition-transform duration-300 bg-[#1C1C1E]/80">
+                        <div class="w-16 h-16 rounded-[20px] bg-black/40 border border-white/10 flex items-center justify-center text-3xl shadow-inner mr-5 relative overflow-hidden shrink-0">
                             <div class="absolute inset-0 bg-[conic-gradient(from_0deg,#30D158,#0A84FF,#5E5CE6,#30D158)] animate-[spin_3s_linear_infinite] opacity-30 blur-sm"></div>
                             <span class="relative z-10">✍️</span>
                         </div>
-                        <div class="text-[20px] font-bold text-white tracking-wide leading-tight mb-2">创作工坊</div>
-                        <div class="text-[13px] text-white/50 font-medium">手动录入，复刻你的专属灵感</div>
+                        <div class="flex flex-col">
+                            <div class="text-[20px] font-black text-white tracking-wide leading-tight mb-1">创作工坊</div>
+                            <div class="text-[12px] text-white/50 font-medium">手动录入，复刻你的专属灵感</div>
+                        </div>
                     </div>
                 </div>
 
@@ -1288,7 +1285,7 @@
         if(!tagsHtml) tagsHtml = `<span class="bg-black/40 text-white/90 px-2.5 py-1 rounded-md text-[12px] border border-white/10 whitespace-nowrap backdrop-blur-md shadow-sm">平衡</span>`;
 
         let infoPanelHtml = `
-            <div class="flex items-center justify-between bg-white/[0.06] border border-white/10 rounded-3xl p-4 mb-6 backdrop-blur-md shadow-inner relative overflow-hidden">
+            <div class="flex items-center justify-between glass-card border border-white/10 rounded-3xl p-4 mb-6 backdrop-blur-md shadow-inner relative overflow-hidden">
                 <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-transparent via-[${d.themeColor}] to-transparent opacity-50"></div>
                 <div class="flex flex-col gap-2 relative z-10 w-3/5 pl-2">
                     <div class="flex items-baseline gap-1">
@@ -1315,14 +1312,14 @@
                     <span class="relative z-10 flex items-center drop-shadow-md tracking-wide">✨ 永久收录至典藏</span>
                 </button>
                 <div class="flex gap-3">
-                    <button onclick="retryAIBartender('${d.id}', event)" class="flex-1 py-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 text-white font-bold text-[13px] active:scale-95 transition-all shadow-xl hover:bg-white/10">换一个</button>
+                    <button onclick="retryAIBartender('${d.id}', event)" class="flex-1 py-3.5 rounded-2xl glass-card backdrop-blur-md text-white font-bold text-[13px] active:scale-95 transition-all shadow-xl hover:bg-white/10">换一个</button>
                     <button onclick="acceptRandom('${d.id}', event)" class="flex-1 py-3.5 rounded-2xl bg-white text-black font-black text-[13px] active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.4)]">仅查看配方</button>
                 </div>
             </div>`;
         } else {
             buttonsHtml = `
             <div class="flex gap-3 mt-auto">
-                <button onclick="retryRandom(event)" class="flex-1 py-3.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/20 text-white font-bold text-[13px] active:scale-95 transition-all shadow-xl hover:bg-white/10">再抽一次</button>
+                <button onclick="retryRandom(event)" class="flex-1 py-3.5 rounded-2xl glass-card backdrop-blur-md text-white font-bold text-[13px] active:scale-95 transition-all shadow-xl hover:bg-white/10">再抽一次</button>
                 <button onclick="acceptRandom('${d.id}', event)" class="flex-1 py-3.5 rounded-2xl bg-white text-black font-black text-[13px] active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.4)]">就喝这杯</button>
             </div>`;
         }
@@ -1332,7 +1329,13 @@
             <div class="relative w-[85%] max-w-[340px] rounded-[32px] overflow-hidden shadow-2xl transition-all duration-300 transform scale-95 opacity-0 border border-white/10" id="randomCardWrap">
                 <div class="aspect-[3/4.5] relative overflow-hidden flex flex-col justify-end p-6 pb-8" style="background: ${d.cardGrad}">
                     <button onclick="closeRandomModal(event)" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-black/30 backdrop-blur-xl rounded-full text-white/60 hover:text-white active:scale-75 transition-all z-30 border border-white/10 text-sm">✕</button>
-                    <div class="card-initial" style="font-size: 160px; right: -15%; top: -10%; opacity: 0.15">${d.en.charAt(0)}</div>
+                    
+                    <div class="absolute inset-0 flex items-center justify-center z-0 pointer-events-none overflow-hidden">
+                        <div class="w-[280px] h-[280px] opacity-[0.08] transform translate-y-16">
+                            ${window.getGlassSvgCover(d.glass, d.themeColor)}
+                        </div>
+                    </div>
+                    
                     <div class="relative z-10 flex flex-col h-full pt-10">
                         <div class="text-[10px] font-black uppercase tracking-widest mb-2 drop-shadow-md" style="color: ${d.themeColor}">${d.isAI ? 'AI 专属创作' : '命运之选'}</div>
                         <div class="text-[28px] font-black text-white leading-[1.1] mb-1 drop-shadow-lg">${d.zh}</div>
@@ -1399,20 +1402,20 @@
         haptic('light');
         const modal = document.getElementById('diyModal');
         modal.innerHTML = `
-            <div class="flex items-center justify-between px-6 pb-3 relative z-20 text-white border-b border-white/10 bg-[#000]/80 backdrop-blur-md" style="padding-top: calc(16px + env(safe-area-inset-top, 24px));">
+            <div class="flex items-center justify-between px-6 pb-3 relative z-20 text-white border-b border-white/10 bg-[#050505]/90 backdrop-blur-md" style="padding-top: calc(16px + env(safe-area-inset-top, 24px));">
                 <button onclick="closeDIYModal()" class="text-ios-blue text-[16px] p-2 -ml-2 font-medium active:opacity-50 transition-opacity">取消</button>
                 <div class="font-bold text-[16px] tracking-wide">DIY 专属配方</div>
                 <button onclick="saveDIYRecipe()" class="text-ios-blue text-[16px] p-2 -mr-2 font-bold active:opacity-50 transition-opacity">保存</button>
             </div>
             
             <div class="flex-1 overflow-y-auto px-6 py-6 space-y-5 text-white pb-32">
-                <div class="bg-[#1C1C1E] rounded-[20px] p-4 border border-white/5 shadow-lg">
+                <div class="glass-card rounded-[20px] p-4">
                     <input type="text" id="diyZh" placeholder="中文酒名 (如: 仲夏夜之梦)" class="w-full bg-transparent outline-none mb-3 font-bold text-lg placeholder-white/30 text-white">
                     <div class="w-full h-[1px] bg-white/5 mb-3"></div>
                     <input type="text" id="diyEn" placeholder="English Name (Optional)" class="w-full bg-transparent outline-none text-[13px] placeholder-white/30 text-white/80">
                 </div>
 
-                <div class="bg-[#1C1C1E] rounded-[20px] p-5 border border-white/5 shadow-lg grid grid-cols-2 gap-4">
+                <div class="glass-card rounded-[20px] p-5 grid grid-cols-2 gap-4">
                     <div>
                         <div class="text-[11px] font-bold text-white/40 mb-1 uppercase tracking-wider">基酒基调</div>
                         <select id="diyBase" class="w-full bg-transparent outline-none font-bold text-[15px] text-white">
@@ -1435,32 +1438,33 @@
                             <option value="coupe" class="bg-[#1C1C1E]">碟形杯 Coupe</option>
                             <option value="flute" class="bg-[#1C1C1E]">香槟杯 Flute</option>
                             <option value="shot" class="bg-[#1C1C1E]">子弹杯 Shot</option>
+                            <option value="wine" class="bg-[#1C1C1E]">红酒杯 Wine</option>
                         </select>
                     </div>
                     <div class="col-span-2 mt-1">
                         <div class="text-[11px] font-bold text-white/40 mb-2 uppercase tracking-wider">酒精度 (%)</div>
-                        <input type="number" id="diyAbv" placeholder="例如: 15" class="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-2 outline-none font-bold text-white" value="15">
+                        <input type="number" id="diyAbv" placeholder="例如: 15" class="w-full bg-black/30 border border-white/5 rounded-xl px-4 py-3 outline-none font-bold text-white" value="15">
                     </div>
                 </div>
 
-                <div class="bg-[#1C1C1E] rounded-[20px] p-5 border border-white/5 shadow-lg">
+                <div class="glass-card rounded-[20px] p-5">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-[14px] font-bold text-white">材料清单</span>
                         <span class="text-[11px] font-medium text-white/40 bg-white/5 px-2 py-0.5 rounded-full">每行一项</span>
                     </div>
-                    <textarea id="diyIng" rows="4" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 outline-none text-[13px] leading-relaxed placeholder-white/20 resize-none text-white/90" placeholder="例如：\n琴酒 45ml\n鲜柠檬汁 15ml\n冰块 适量"></textarea>
+                    <textarea id="diyIng" rows="4" class="w-full bg-black/30 border border-white/5 rounded-xl p-3 outline-none text-[13px] leading-relaxed placeholder-white/20 resize-none text-white/90" placeholder="例如：\n琴酒 45ml\n鲜柠檬汁 15ml\n冰块 适量"></textarea>
                 </div>
 
-                <div class="bg-[#1C1C1E] rounded-[20px] p-5 border border-white/5 shadow-lg">
+                <div class="glass-card rounded-[20px] p-5">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-[14px] font-bold text-white">制作工序</span>
                         <span class="text-[11px] font-medium text-white/40 bg-white/5 px-2 py-0.5 rounded-full">每行一步</span>
                     </div>
-                    <textarea id="diySteps" rows="4" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 outline-none text-[13px] leading-relaxed placeholder-white/20 resize-none text-white/90" placeholder="例如：\n摇酒壶中加满冰块\n倒入所有材料剧烈摇晃\n双重过滤至冰镇酒杯"></textarea>
+                    <textarea id="diySteps" rows="4" class="w-full bg-black/30 border border-white/5 rounded-xl p-3 outline-none text-[13px] leading-relaxed placeholder-white/20 resize-none text-white/90" placeholder="例如：\n摇酒壶中加满冰块\n倒入所有材料剧烈摇晃\n双重过滤至冰镇酒杯"></textarea>
                 </div>
 
                 <div class="text-[11px] text-white/30 text-center font-medium mt-4 pb-8">
-                    ✨ 保存后，系统将自动进行颜色分配，并智能生成五维风味数据。
+                    ✨ 保存后，系统将自动分配颜色及杯型渲染，并智能生成风味矩阵。
                 </div>
             </div>
         `;
@@ -1521,9 +1525,16 @@
         let diyList = cocktailDB.filter(d => String(d.id).startsWith('diy_') && !(d.isAI && !d.saved));
         let notesList = cocktailDB.filter(d => tastingNotes[d.id] && (tastingNotes[d.id].note || tastingNotes[d.id].rating > 0) && !(d.isAI && !d.saved));
 
-        let html = `<div class="large-title">我的主页</div>
-            <div class="px-6 mb-8 space-y-4">
-                <div class="bg-[#1C1C1E]/80 backdrop-blur-md rounded-[20px] p-5 flex justify-between items-center border border-white/5 shadow-xl">
+        let html = `
+            <div class="px-6 pt-[60px] pb-4 relative z-10 flex justify-between items-end">
+                <div class="flex flex-col">
+                    <span class="text-[12px] font-bold text-white/40 tracking-[0.2em] uppercase mb-1">Profile</span>
+                    <div class="text-[38px] font-black text-white tracking-tighter">我的主页</div>
+                </div>
+            </div>
+            
+            <div class="px-6 mb-8 space-y-4 relative z-10">
+                <div class="glass-card rounded-[20px] p-5 flex justify-between items-center">
                     <span class="font-bold text-white/90 tracking-wide text-sm">全局量酒单位</span>
                     <div class="relative flex bg-[#0A0A0A] rounded-full p-1 cursor-pointer w-[100px] h-[36px] active:scale-95 transition-transform" onclick="toggleUnit()">
                         <div class="absolute top-1 bottom-1 w-[46px] bg-ios-red rounded-full transition-all duration-300 ease-out shadow-[0_2px_8px_rgba(250,45,72,0.4)]" style="left: ${isOz ? '50px' : '4px'}"></div>
@@ -1532,7 +1543,7 @@
                     </div>
                 </div>
                 
-                <div class="bg-[#1C1C1E]/80 backdrop-blur-md rounded-[20px] p-5 flex justify-between items-center border border-white/5 shadow-xl">
+                <div class="glass-card rounded-[20px] p-5 flex justify-between items-center">
                     <span class="font-bold text-white/90 tracking-wide text-sm">外观模式</span>
                     <div class="relative flex bg-[#0A0A0A] rounded-full p-1 cursor-pointer w-[100px] h-[36px] active:scale-95 transition-transform" onclick="toggleTheme()">
                         <div class="absolute top-1 bottom-1 w-[46px] bg-[#64D2FF] rounded-full transition-all duration-300 ease-out shadow-[0_2px_8px_rgba(100,210,255,0.4)]" style="left: ${isLightMode ? '50px' : '4px'}"></div>
@@ -1541,62 +1552,84 @@
                     </div>
                 </div>
                 
-                <div class="bg-[#1C1C1E]/80 backdrop-blur-md rounded-[20px] p-5 flex justify-between items-center border border-white/5 shadow-xl cursor-pointer active:scale-95 transition-transform" onclick="openDataModal()">
+                <div class="glass-card rounded-[20px] p-5 flex justify-between items-center cursor-pointer active:scale-95 transition-transform" onclick="openDataModal()">
                     <span class="font-bold text-white/90 tracking-wide text-sm">💾 数据备份与恢复</span>
                     <span class="text-white/40 text-lg">›</span>
                 </div>
             </div>
             
-            <div class="px-6 text-lg font-bold text-[#30D158] mb-4 tracking-wider flex items-center"><span class="mr-2 text-xl">✍️</span> 创作记录</div>
-            <div class="grid grid-cols-2 gap-4 px-6 mb-10">`;
+            <div class="px-6 text-[16px] font-bold text-[#30D158] mb-4 tracking-wider flex items-center relative z-10"><span class="mr-2 text-xl">✍️</span> 创作记录</div>
+            <div class="grid grid-cols-2 gap-4 px-6 mb-10 relative z-10">`;
         
         if(!diyList.length) {
             html += `<div class="col-span-2 text-white/30 text-[13px] text-center bg-white/5 rounded-2xl py-6 border border-white/5">暂无创作，快去灵感页试试吧。</div>`;
         } else {
             diyList.forEach((d,i) => { 
-                html += `<div class="cover-card stagger-item shadow-xl" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.05, 0.8)}s" onclick="openDetail('${d.id}')">
-                    <div class="card-initial">${d.en.charAt(0)}</div>
-                    <div class="cover-label flex flex-col justify-end">
-                        <div class="text-[14px] font-bold leading-tight drop-shadow-md text-white truncate w-full">${d.zh}</div>
-                        <div class="text-[9px] font-medium opacity-60 truncate mt-0.5 tracking-wider">${d.isAI ? '✨ AI特调' : '✍️ DIY原创'}</div>
+                html += `<div class="cover-card-centered stagger-item group h-[210px] cursor-pointer" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.03, 0.4)}s" onclick="openDetail('${d.id}')">
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div class="w-32 h-32 blur-[40px] opacity-30 rounded-full transition-opacity duration-500 group-hover:opacity-60" style="background: ${d.themeColor}"></div>
+                    </div>
+                    
+                    <div class="w-[72px] h-[72px] mb-3 opacity-90 drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)] z-10 transform transition-transform duration-500 group-hover:scale-110">
+                        ${window.getGlassSvgCover(d.glass, d.themeColor)}
+                    </div>
+                    
+                    <div class="z-10 w-full flex flex-col items-center text-center">
+                        <div class="text-[16px] font-bold text-white drop-shadow-md truncate w-full px-1">${d.zh}</div>
+                        <div class="text-[10px] font-medium text-white/50 truncate tracking-wide uppercase mt-1 w-full px-2">${d.isAI ? '✨ AI特调' : '✍️ DIY原创'}</div>
                     </div>
                 </div>`; 
             });
         }
         
         html += `</div>
-            <div class="px-6 text-lg font-bold text-ios-gold mb-4 tracking-wider flex items-center"><span class="mr-2 text-xl">📝</span> 品鉴笔记</div>
-            <div class="grid grid-cols-2 gap-4 px-6 mb-10">`;
+            <div class="px-6 text-[16px] font-bold text-ios-gold mb-4 tracking-wider flex items-center relative z-10"><span class="mr-2 text-xl">📝</span> 品鉴笔记</div>
+            <div class="grid grid-cols-2 gap-4 px-6 mb-10 relative z-10">`;
             
         if(!notesList.length) {
             html += `<div class="col-span-2 text-white/30 text-[13px] text-center bg-white/5 rounded-2xl py-6 border border-white/5">暂无品鉴笔记，去给喜欢的酒打个分吧。</div>`;
         } else {
             notesList.forEach((d,i) => { 
                 const noteInfo = tastingNotes[d.id];
-                const stars = '★'.repeat(noteInfo.rating) + '☆'.repeat(5 - noteInfo.rating);
-                html += `<div class="cover-card stagger-item shadow-xl" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.05, 0.8)}s" onclick="openDetail('${d.id}')">
-                    <div class="card-initial">${d.en.charAt(0)}</div>
-                    <div class="cover-label flex flex-col justify-end">
-                        <div class="text-[14px] font-bold leading-tight drop-shadow-md text-white truncate w-full">${d.zh}</div>
-                        <div class="text-[10px] font-medium text-[#D4AF37] mt-1 drop-shadow-md tracking-widest">${noteInfo.rating > 0 ? stars : '📝 已记录'}</div>
+                const r = parseInt(noteInfo.rating) || 0;
+                const stars = '★'.repeat(r) + '☆'.repeat(5 - r);
+                html += `<div class="cover-card-centered stagger-item group h-[210px] cursor-pointer" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.03, 0.4)}s" onclick="openDetail('${d.id}')">
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div class="w-32 h-32 blur-[40px] opacity-30 rounded-full transition-opacity duration-500 group-hover:opacity-60" style="background: ${d.themeColor}"></div>
+                    </div>
+                    
+                    <div class="w-[72px] h-[72px] mb-3 opacity-90 drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)] z-10 transform transition-transform duration-500 group-hover:scale-110">
+                        ${window.getGlassSvgCover(d.glass, d.themeColor)}
+                    </div>
+                    
+                    <div class="z-10 w-full flex flex-col items-center text-center">
+                        <div class="text-[16px] font-bold text-white drop-shadow-md truncate w-full px-1">${d.zh}</div>
+                        <div class="text-[11px] text-[#D4AF37] font-medium mt-1 tracking-widest drop-shadow-md">${r > 0 ? stars : '📝 已记录'}</div>
                     </div>
                 </div>`; 
             });
         }
         
         html += `</div>
-            <div class="px-6 text-lg font-bold text-ios-red mb-4 tracking-wider flex items-center"><span class="mr-2 text-xl">★</span> 星标珍藏</div>
-            <div class="grid grid-cols-2 gap-4 px-6 pb-40">`;
+            <div class="px-6 text-[16px] font-bold text-ios-red mb-4 tracking-wider flex items-center relative z-10"><span class="mr-2 text-xl">★</span> 星标珍藏</div>
+            <div class="grid grid-cols-2 gap-4 px-6 pb-40 relative z-10">`;
             
         if(!fs.length) {
             html += `<div class="col-span-2 text-white/30 text-[13px] text-center bg-white/5 rounded-2xl py-6 border border-white/5">尚未收藏任何配方。</div>`;
         } else {
             fs.forEach((d,i) => { 
-                html += `<div class="cover-card stagger-item shadow-xl" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.05, 0.8)}s" onclick="openDetail('${d.id}')">
-                    <div class="card-initial">${d.en.charAt(0)}</div>
-                    <div class="cover-label flex flex-col justify-end">
-                        <div class="text-[14px] font-bold leading-tight drop-shadow-md text-white truncate w-full">${d.zh}</div>
-                        <div class="text-[9px] font-medium opacity-60 truncate mt-0.5 tracking-wider">${d.en}</div>
+                html += `<div class="cover-card-centered stagger-item group h-[210px] cursor-pointer" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.03, 0.4)}s" onclick="openDetail('${d.id}')">
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div class="w-32 h-32 blur-[40px] opacity-30 rounded-full transition-opacity duration-500 group-hover:opacity-60" style="background: ${d.themeColor}"></div>
+                    </div>
+                    
+                    <div class="w-[72px] h-[72px] mb-3 opacity-90 drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)] z-10 transform transition-transform duration-500 group-hover:scale-110">
+                        ${window.getGlassSvgCover(d.glass, d.themeColor)}
+                    </div>
+                    
+                    <div class="z-10 w-full flex flex-col items-center text-center">
+                        <div class="text-[16px] font-bold text-white drop-shadow-md truncate w-full px-1">${d.zh}</div>
+                        <div class="text-[10px] font-medium text-white/50 truncate tracking-wide uppercase mt-1 w-full px-2">${d.en}</div>
                     </div>
                 </div>`; 
             });
@@ -1619,14 +1652,12 @@
     window.setRating = function(id, idx) {
         haptic('light');
         
-        // 如果点击的是当前的星级，则清零（取消评价）
         if (tempRating === idx) {
             tempRating = 0;
         } else {
             tempRating = idx;
         }
 
-        // 更新星星UI
         for(let i=1; i<=5; i++) {
             const el = document.getElementById('star-'+i);
             if(el) {
@@ -1636,7 +1667,6 @@
             }
         }
         
-        // 自动保存星级，并尝试保留当前可能已输入的笔记内容
         const currentNoteInput = document.getElementById('noteInput');
         const currentNoteText = currentNoteInput ? currentNoteInput.value.trim() : '';
         
@@ -1676,28 +1706,28 @@
         let extraBtnHtml = '';
         if (d.isAI && !d.saved) {
             extraBtnHtml = `
-            <button onclick="saveFromDetail('${d.id}')" class="relative overflow-hidden group text-white text-[12px] font-bold px-4 py-2 rounded-full active:scale-95 transition-all shadow-[0_4px_15px_rgba(0,0,0,0.3)] mr-3 bg-white/10 border border-white/20 backdrop-blur-xl">
+            <button onclick="saveFromDetail('${d.id}')" class="relative overflow-hidden group text-white text-[12px] font-bold px-4 py-2 rounded-full active:scale-95 transition-all shadow-[0_4px_15px_rgba(0,0,0,0.3)] mr-3 glass-card">
                 <div class="absolute inset-0 opacity-40 mix-blend-screen transition-opacity group-hover:opacity-70" style="background: ${d.themeColor}"></div>
                 <span class="relative z-10 drop-shadow-md tracking-wider">✨ 收录酒单</span>
             </button>`;
         } else if (d.id.startsWith('diy_')) {
             extraBtnHtml = `
             <div class="relative flex items-center z-[150]">
-                <div id="deleteMenuPanel" class="absolute right-0 top-12 bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/10 p-3 rounded-2xl shadow-2xl flex-col gap-2 transform scale-95 opacity-0 origin-top-right transition-all duration-300 pointer-events-none hidden">
+                <div id="deleteMenuPanel" class="absolute right-0 top-12 glass-card p-3 rounded-2xl shadow-2xl flex-col gap-2 transform scale-95 opacity-0 origin-top-right transition-all duration-300 pointer-events-none hidden">
                     <div class="text-[11px] text-white/50 px-2 py-1 text-center whitespace-nowrap mb-1">确定删除此自定义配方？</div>
                     <div class="flex gap-2">
                         <button onclick="confirmDeleteDIY('${d.id}')" class="flex-1 py-2.5 bg-ios-red text-white text-[13px] font-bold rounded-xl active:scale-95 transition-all shadow-[0_4px_15px_rgba(250,45,72,0.4)]">删除</button>
                         <button onclick="toggleDeleteMenu()" class="flex-1 py-2.5 bg-white/10 text-white text-[13px] font-bold rounded-xl active:scale-95 transition-all">保留</button>
                     </div>
                 </div>
-                <button onclick="toggleDeleteMenu()" class="w-10 h-10 flex items-center justify-center bg-white/5 backdrop-blur-xl rounded-full text-lg hover:bg-white/10 active:scale-75 transition-all duration-300 border border-white/10 ml-3" title="删除配方">
+                <button onclick="toggleDeleteMenu()" class="w-10 h-10 flex items-center justify-center glass-card rounded-full text-lg hover:bg-white/10 active:scale-75 transition-all duration-300 ml-3" title="删除配方">
                     <svg viewBox="0 0 24 24" class="w-4 h-4 fill-current opacity-70"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
                 </button>
             </div>`;
         }
 
         document.getElementById('detailNavRight').innerHTML = `
-            <button onclick="shareRecipe()" class="w-10 h-10 flex items-center justify-center bg-white/5 backdrop-blur-xl rounded-full text-lg hover:bg-white/10 active:scale-75 transition-all duration-300 border border-white/10" title="分享配方">
+            <button onclick="shareRecipe()" class="w-10 h-10 flex items-center justify-center glass-card rounded-full text-lg hover:bg-white/10 active:scale-75 transition-all duration-300" title="分享配方">
                 <svg viewBox="0 0 24 24" class="w-4 h-4 fill-current"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/></svg>
             </button>
             ${extraBtnHtml}
@@ -1753,9 +1783,13 @@
             </div>
         `).join('');
 
+        let tagsHtml = ['酸', '甜', '苦', '烈', '果香'].filter((f, idx) => d.flavors[idx] >= 55).map(f => `<span class="bg-white/10 text-white/90 px-2 py-1 rounded-md text-[10px] border border-white/10 whitespace-nowrap shadow-sm">${f}</span>`).join('');
+        if(!tagsHtml) tagsHtml = `<span class="bg-white/10 text-white/90 px-2 py-1 rounded-md text-[10px] border border-white/10 whitespace-nowrap shadow-sm">平衡</span>`;
+
         let starsHtml = '';
+        const currentRating = parseInt(savedNote.rating) || 0;
         for(let i=1; i<=5; i++) {
-            const isFilled = i <= savedNote.rating;
+            const isFilled = i <= currentRating;
             starsHtml += `<span id="star-${i}" onclick="event.stopPropagation(); setRating('${d.id}', ${i})" class="text-3xl cursor-pointer transition-all active:scale-75 relative z-20" style="color: ${isFilled ? '#D4AF37' : (isLightMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)')}; text-shadow: ${isFilled ? '0 0 10px rgba(212,175,55,0.5)' : 'none'};">${isFilled ? '★' : '☆'}</span>`;
         }
 
@@ -1766,23 +1800,37 @@
                 <div class="text-[12px] font-medium opacity-70 mt-4 tracking-widest text-white/80 border-t border-white/10 pt-4 w-4/5 mx-auto">「 ${d.tagline} 」</div>
             </div>
             
-            <div class="flex gap-3 mb-10 h-[160px] text-white">
-                <div class="w-[85px] shrink-0 flex flex-col gap-3">
-                    <div class="flex-1 bg-white/[0.04] backdrop-blur-xl rounded-[22px] border border-white/[0.08] flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
-                        <div class="absolute top-0 left-0 w-full h-1" style="background: linear-gradient(90deg, transparent, ${d.themeColor}, transparent); opacity: 0.5"></div>
-                        <span class="text-[11px] font-black opacity-50 uppercase mb-1">酒精度</span>
-                        <div class="text-[28px] font-black drop-shadow-md flex items-baseline leading-none" style="color: ${d.themeColor}">${d.abv}<span class="text-[14px] opacity-70 ml-0.5">%</span></div>
-                    </div>
-                    <div class="flex-1 bg-white/[0.04] backdrop-blur-xl rounded-[22px] border border-white/[0.08] flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
-                        <div class="absolute top-0 left-0 w-full h-1" style="background: linear-gradient(90deg, transparent, ${d.themeColor}, transparent); opacity: 0.5"></div>
-                        <span class="text-[11px] font-black opacity-50 uppercase mb-1">工艺</span>
-                        <div id="animationStage" class="w-[42px] h-[42px]"></div>
+            <!-- Bento Box Data Layout -->
+            <div class="grid grid-cols-2 gap-3 mb-10 text-white h-[230px]">
+                <div class="glass-card rounded-[28px] flex flex-col items-center justify-center relative overflow-hidden col-span-1 row-span-2 group border-0">
+                    <div class="absolute inset-0 opacity-20 transition-opacity duration-500 group-hover:opacity-40" style="background: radial-gradient(circle at 50% 50%, ${d.themeColor}, transparent 70%)"></div>
+                    <span class="absolute top-4 left-4 text-[10px] font-bold text-white/40 uppercase tracking-widest z-10">Craft</span>
+                    <div id="animationStage" class="w-[65%] h-[65%] mt-2 relative z-10 transform group-hover:scale-110 transition-transform duration-500"></div>
+                </div>
+                
+                <div class="glass-card rounded-[24px] col-span-1 p-4 flex flex-col justify-end relative overflow-hidden border-0">
+                    <div class="absolute -top-4 -right-4 w-24 h-24 blur-[25px] opacity-30 rounded-full" style="background: ${d.themeColor}"></div>
+                    <span class="absolute top-4 left-4 text-[10px] font-bold text-white/40 uppercase tracking-widest">ABV</span>
+                    <div class="text-[40px] font-black leading-none drop-shadow-md relative z-10" style="color: ${d.themeColor}">${d.abv}<span class="text-[16px] opacity-60 ml-0.5 text-white">%</span></div>
+                </div>
+                
+                <div class="glass-card rounded-[20px] col-span-1 p-4 flex items-center justify-between border-0">
+                    <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Base</span>
+                    <span class="text-[14px] font-bold text-white/90 drop-shadow-sm">${d.base}</span>
+                </div>
+            </div>
+            
+            <!-- Radar Matrix Box -->
+            <div class="glass-card rounded-[28px] w-full p-5 flex items-center justify-between mb-12 relative overflow-hidden border-0">
+                <div class="absolute -bottom-10 -left-10 w-40 h-40 blur-[40px] opacity-20 rounded-full pointer-events-none" style="background: ${d.themeColor}"></div>
+                <div class="flex flex-col gap-3 z-10 w-1/2">
+                    <span class="text-[11px] font-bold text-white/40 uppercase tracking-widest">Flavor Matrix</span>
+                    <div class="flex flex-wrap gap-1.5 items-start">
+                        ${tagsHtml}
                     </div>
                 </div>
-                <div class="flex-1 bg-white/[0.04] backdrop-blur-xl rounded-[22px] border border-white/[0.08] flex flex-col items-center justify-center relative shadow-2xl overflow-hidden p-2">
-                    <div class="absolute top-0 left-0 w-full h-1" style="background: linear-gradient(90deg, transparent, ${d.themeColor}, transparent); opacity: 0.5"></div>
-                    <span class="absolute top-4 left-4 text-[12px] font-black opacity-50 uppercase tracking-widest">五维风味解析</span>
-                    <div class="w-32 h-32 mt-4 drop-shadow-2xl">${getRadarSvg(d.flavors, d.themeColor)}</div>
+                <div class="w-[110px] h-[110px] relative z-10 drop-shadow-2xl">
+                    ${getRadarSvg(d.flavors, d.themeColor)}
                 </div>
             </div>
 
@@ -1791,7 +1839,7 @@
                     <div class="flex items-center space-x-2">
                         <span class="text-[18px] font-black text-white/90 tracking-wide">需要 ${d.ingredients.length} 种材料</span>
                     </div>
-                    <div class="text-[15px] font-black font-mono text-white/40 flex items-center bg-white/[0.05] px-3 py-1 rounded-full border border-white/[0.05]">
+                    <div class="text-[15px] font-black font-mono text-white/40 flex items-center glass-card px-3 py-1 rounded-full border-0">
                         <span id="ingCounter" style="color: ${d.themeColor}; transition: color 0.3s;">0</span><span class="mx-1.5 opacity-50">/</span>${d.ingredients.length}
                     </div>
                 </div>
@@ -1801,7 +1849,7 @@
                     </div>
                 </div>
                 
-                <div class="bg-white/[0.04] backdrop-blur-2xl rounded-[24px] border border-white/[0.08] shadow-2xl overflow-hidden">
+                <div class="glass-card rounded-[24px] overflow-hidden border-0">
                     ${ingredientsHtml}
                 </div>
             </div>
@@ -1810,7 +1858,7 @@
                 <div class="flex items-center px-2 mb-4">
                     <span class="text-[18px] font-black text-white/90 tracking-wide">制作方法</span>
                 </div>
-                <div class="bg-white/[0.04] backdrop-blur-2xl rounded-[24px] border border-white/[0.08] shadow-2xl overflow-hidden py-2 relative">
+                <div class="glass-card rounded-[24px] overflow-hidden py-2 relative border-0">
                     ${stepsHtml}
                 </div>
             </div>
@@ -1820,13 +1868,13 @@
                 <div class="flex items-center px-2 mb-4">
                     <span class="text-[18px] font-black text-white/90 tracking-wide">专属品鉴笔记</span>
                 </div>
-                <div class="bg-white/[0.04] backdrop-blur-2xl rounded-[24px] border border-white/[0.08] shadow-2xl p-5 relative overflow-hidden flex flex-col gap-4">
-                    <div class="flex justify-between items-center">
+                <div class="glass-card rounded-[24px] p-5 relative overflow-hidden flex flex-col gap-4 border-0">
+                    <div class="flex justify-between items-center relative z-10">
                         <span class="text-[13px] font-bold text-white/50 tracking-wider uppercase">打个分数</span>
                         <div class="flex gap-1" id="starContainer">${starsHtml}</div>
                     </div>
-                    <textarea id="noteInput" rows="3" class="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-[14px] leading-relaxed text-white/90 placeholder-white/30 resize-none outline-none focus:border-white/30 transition-all shadow-inner" placeholder="记录微调心得或品鉴感受，如：今天试了，下次糖可以少加 5ml...">${savedNote.note}</textarea>
-                    <button onclick="saveNote('${d.id}')" class="w-full py-3.5 bg-white/10 text-white rounded-xl font-bold active:scale-95 transition-all shadow-md hover:bg-white/20 border border-white/10">保存笔记</button>
+                    <textarea id="noteInput" rows="3" class="w-full bg-black/30 border border-white/5 rounded-[16px] p-4 text-[14px] leading-relaxed text-white/90 placeholder-white/30 resize-none outline-none focus:border-white/20 transition-all shadow-inner relative z-10" placeholder="记录微调心得或品鉴感受，如：今天试了，下次糖可以少加 5ml...">${escapeHTML(savedNote.note || '')}</textarea>
+                    <button onclick="saveNote('${d.id}')" class="w-full py-4 bg-white/10 text-white rounded-[16px] font-bold active:scale-95 transition-all shadow-md hover:bg-white/20 border border-white/10 relative z-10">保存笔记</button>
                 </div>
             </div>
             `;
@@ -1836,6 +1884,27 @@
         document.getElementById('bottomTab').style.transform = 'translateY(120px)';
         detail.classList.remove('translate-y-full');
         setTimeout(() => { detail.classList.add('detail-show'); startSim(d); }, 50);
+    }
+
+    window.closeRecipeDetail = function() { 
+        if(animTimer) clearInterval(animTimer); 
+        const detail = document.getElementById('recipeDetail'); 
+        detail.style.transform = ''; 
+        detail.style.backgroundColor = '';
+        detail.classList.remove('detail-show'); 
+        detail.classList.add('translate-y-full'); 
+        document.getElementById('mainWrapper').classList.remove('content-shrink'); 
+        document.getElementById('bottomTab').style.transform = 'translateY(0)'; 
+        const panel = document.getElementById('deleteMenuPanel');
+        if(panel) {
+            panel.classList.remove('opacity-100', 'scale-100');
+            panel.classList.add('opacity-0', 'scale-95', 'pointer-events-none', 'hidden');
+        }
+        
+        const profileTab = document.getElementById('tab-profile');
+        if(profileTab && profileTab.classList.contains('active')) {
+            renderProfile();
+        }
     }
 
     window.toggleDeleteMenu = function() {
@@ -1966,78 +2035,6 @@
         update(); animTimer = setInterval(update, 2400);
     }
 
-    window.closeRecipeDetail = function() { 
-        if(animTimer) clearInterval(animTimer); 
-        const detail = document.getElementById('recipeDetail'); 
-        detail.style.transform = ''; 
-        detail.style.backgroundColor = '';
-        detail.classList.remove('detail-show'); 
-        detail.classList.add('translate-y-full'); 
-        document.getElementById('mainWrapper').classList.remove('content-shrink'); 
-        document.getElementById('bottomTab').style.transform = 'translateY(0)'; 
-        const panel = document.getElementById('deleteMenuPanel');
-        if(panel) {
-            panel.classList.remove('opacity-100', 'scale-100');
-            panel.classList.add('opacity-0', 'scale-95', 'pointer-events-none', 'hidden');
-        }
-    }
-
-    window.toggleFavorite = function() { 
-        const idx = favoritedIds.indexOf(currentDetailId); 
-        const d = cocktailDB.find(x => x.id === currentDetailId);
-        if(idx>-1) { favoritedIds.splice(idx,1); haptic('light'); } 
-        else { favoritedIds.push(currentDetailId); haptic('success'); } 
-        saveLocalData();
-        showMsg(idx>-1?'已移出典藏':'已加入典藏', idx===-1); 
-        document.getElementById('detailFavBtn').innerText = favoritedIds.includes(currentDetailId)?'★':'☆'; 
-        document.getElementById('detailFavBtn').style.color = favoritedIds.includes(currentDetailId) ? d.themeColor : (isLightMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.4)'); 
-    }
-    
-    window.shareRecipe = function() {
-        haptic('medium');
-        const d = cocktailDB.find(x => x.id === currentDetailId);
-        const text = `🍸【${d.zh} ${d.en}】\n📊 酒精度: ${d.abv}%\n\n📝 配方清单:\n${d.ingredients.map(i => '- ' + formatVol(i)).join('\n')}\n\n👉 Cocktail Master 荣誉出品`;
-        const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
-        showMsg('配方已复制，快去分享吧！', true);
-    }
-
-    window.toggleIngredient = function(el, themeColor, totalCount) {
-        haptic('light'); 
-        const c = el.querySelector('.chk'); 
-        const svg = el.querySelector('svg');
-        const textWrap = el.querySelector('.ing-text-wrap'); 
-        
-        if(c.dataset.checked === '1') {
-            c.dataset.checked = '0';
-            c.style.backgroundColor = 'transparent';
-            c.style.borderColor = 'rgba(255,255,255,0.3)';
-            svg.style.opacity = '0';
-            textWrap.classList.remove('opacity-30', 'line-through');
-        } else {
-            c.dataset.checked = '1';
-            c.style.backgroundColor = themeColor;
-            c.style.borderColor = themeColor;
-            svg.style.opacity = '1';
-            textWrap.classList.add('opacity-30', 'line-through');
-        }
-
-        const checkedCount = document.querySelectorAll('.chk[data-checked="1"]').length;
-        const counterEl = document.getElementById('ingCounter');
-        const progressEl = document.getElementById('ingProgressBar');
-        
-        if (counterEl) { counterEl.innerText = checkedCount; if(checkedCount === totalCount) haptic('success'); }
-        if (progressEl) { const percentage = (checkedCount / totalCount) * 100; progressEl.style.width = `${percentage}%`; }
-    };
-
-    function showMsg(m, success=false) { 
-        const t=document.getElementById('toast'); 
-        document.getElementById('toastText').innerText=m; 
-        const icon = document.getElementById('toastIcon');
-        if(success) { icon.classList.remove('hidden'); } else { icon.classList.add('hidden'); }
-        t.classList.remove('hidden'); setTimeout(()=>t.classList.remove('opacity-0'),10); 
-        setTimeout(()=>{ t.classList.add('opacity-0'); setTimeout(()=>t.classList.add('hidden'),300); },2000); 
-    }
-
     let startY = 0, startX = 0, currentY = 0, isSwiping = false; 
     const detailEl = document.getElementById('recipeDetail');
     const detailContent = document.getElementById('detailContent');
@@ -2060,11 +2057,20 @@
             let dampedY = deltaY * (1 - (deltaY / (window.innerHeight * 2.5)));
             detailEl.style.transform = `translateY(${dampedY}px)`;
             let fadeOpacity = 1 - (deltaY / window.innerHeight);
-            detailEl.style.backgroundColor = `rgba(0, 0, 0, ${Math.max(fadeOpacity, 0.2)})`;
+            detailEl.style.backgroundColor = `rgba(10, 10, 12, ${Math.max(fadeOpacity, 0.2)})`;
         }
     }, {passive: false});
 
-    // 统一手势处理引擎：包含严格防误触、角度限制、多指屏蔽
+    detailEl.addEventListener('touchend', e => {
+        if (startY === 0 || !isSwiping) return;
+        let deltaY = currentY - startY;
+        detailEl.style.transition = 'all 0.5s cubic-bezier(0.32, 0.72, 0, 1)'; 
+        if (deltaY > 140) { haptic('light'); closeRecipeDetail(); } 
+        else { if (!detailEl.classList.contains('translate-y-full')) { detailEl.style.transform = ''; detailEl.style.backgroundColor = ''; } }
+        startY = 0; currentY = 0; startX = 0; isSwiping = false;
+    });
+
+    // 统一手势引擎
     function enableGestures(elementId, contentId, closeCallback) {
         const el = document.getElementById(elementId);
         const content = contentId ? document.getElementById(contentId) : null;
@@ -2110,12 +2116,10 @@
                 let dampedY = dy * (1 - (dy / (window.innerHeight * 2.5)));
                 if (dampedY < 0) dampedY = 0; 
                 el.style.transform = `translateY(${dampedY}px)`;
-                if(elementId === 'recipeDetail') el.style.backgroundColor = `rgba(0, 0, 0, ${Math.max(1 - (dy/window.innerHeight), 0.2)})`;
             } else if (lockDirection === 'x') {
                 if(e.cancelable) e.preventDefault();
                 let dampedX = dx > 0 ? dx : 0;
                 el.style.transform = `translateX(${dampedX}px)`;
-                if(elementId === 'recipeDetail') el.style.backgroundColor = `rgba(0, 0, 0, ${Math.max(1 - (dx/window.innerWidth), 0.2)})`;
             }
         }, {passive: false});
 
@@ -2125,7 +2129,7 @@
             
             if (!lockDirection || lockDirection === 'none') {
                 el.style.transition = 'all 0.3s cubic-bezier(0.32, 0.72, 0, 1)';
-                el.style.transform = ''; el.style.backgroundColor = '';
+                el.style.transform = '';
                 return;
             }
             
@@ -2139,18 +2143,122 @@
             if ((lockDirection === 'y' && dy > 130) || (lockDirection === 'x' && dx > window.innerWidth * 0.3)) { 
                 haptic('light'); closeCallback(); 
             } else { 
-                if (!el.classList.contains('translate-y-full')) { el.style.transform = ''; el.style.backgroundColor = ''; } 
+                if (!el.classList.contains('translate-y-full')) { el.style.transform = ''; } 
             }
         });
     }
 
-    enableGestures('recipeDetail', 'detailContent', closeRecipeDetail);
     enableGestures('diyModal', null, closeDIYModal);
     enableGestures('shoppingModal', null, closeShoppingModal);
     enableGestures('dataModal', null, closeDataModal);
 
     loadLocalData();
     window.onload = () => switchPage('recipes', document.getElementById('tab-recipes'));
+
+    // --- Firebase 云端实时同步服务 ---
+    (async function initFirebase() {
+        try {
+            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
+            const { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
+            const { getFirestore, doc, setDoc, getDoc, onSnapshot } = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
+
+            const configStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+            if (!configStr) return;
+
+            const firebaseConfig = JSON.parse(configStr);
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+            window.firebaseDb = db;
+            window.firebaseDoc = doc;
+            window.firebaseSetDoc = setDoc;
+            window.firebaseAppId = appId;
+
+            const initAuth = async () => {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            };
+            await initAuth();
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    window.firebaseUser = user;
+                    const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'appData', 'cmState');
+                    
+                    onSnapshot(docRef, (docSnap) => {
+                        if (docSnap.metadata.hasPendingWrites) return; 
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            if (data.favs) favoritedIds = data.favs;
+                            if (data.cabinet) myCabinet = data.cabinet;
+                            if (data.shopping) shoppingList = data.shopping;
+                            if (data.shoppingChecked) shoppingCheckedList = data.shoppingChecked;
+                            if (data.notes) tastingNotes = data.notes;
+                            if (typeof data.isOz !== 'undefined') isOz = data.isOz;
+                            if (typeof data.isLightMode !== 'undefined') {
+                                isLightMode = data.isLightMode;
+                                document.body.classList.toggle('light', isLightMode);
+                            }
+                            if (data.customRecipes) {
+                                cocktailDB = cocktailDB.filter(d => !String(d.id).startsWith('diy_') && !String(d.id).startsWith('ai_'));
+                                const newCustom = data.customRecipes.map(d => ({...d, reqCats: new Set(d.reqCats || [])}));
+                                cocktailDB.unshift(...newCustom);
+                            }
+                            
+                            try {
+                                localStorage.setItem('cm_favs', JSON.stringify(favoritedIds));
+                                localStorage.setItem('cm_cabinet', JSON.stringify(myCabinet));
+                                localStorage.setItem('cm_shopping', JSON.stringify(shoppingList));
+                                localStorage.setItem('cm_shopping_checked', JSON.stringify(shoppingCheckedList));
+                                localStorage.setItem('cm_notes', JSON.stringify(tastingNotes));
+                                localStorage.setItem('cm_isOz', JSON.stringify(isOz));
+                                localStorage.setItem('cm_isLight', JSON.stringify(isLightMode));
+                                localStorage.setItem('cm_custom_recipes', JSON.stringify(data.customRecipes || []));
+                            } catch(e) {}
+
+                            const activeTab = document.querySelector('.tab-item.active');
+                            if (activeTab) {
+                                if (activeTab.id === 'tab-recipes' && typeof window.renderListHTMLOnly === 'function') window.renderListHTMLOnly();
+                                else if (activeTab.id === 'tab-cabinet' && typeof window.renderCabinetHTMLOnly === 'function') window.renderCabinetHTMLOnly();
+                                else if (activeTab.id === 'tab-profile' && typeof renderProfile === 'function') renderProfile();
+                            }
+                            
+                            const shopModal = document.getElementById('shoppingModal');
+                            if (shopModal && !shopModal.classList.contains('translate-y-full') && typeof renderShoppingContent === 'function') {
+                                renderShoppingContent();
+                            }
+                            
+                            const detailModal = document.getElementById('recipeDetail');
+                            if (detailModal && detailModal.classList.contains('detail-show') && currentDetailId) {
+                                const favBtn = document.getElementById('detailFavBtn');
+                                if(favBtn) {
+                                    const isFav = favoritedIds.includes(currentDetailId);
+                                    favBtn.innerText = isFav ? '★' : '☆';
+                                    const d = cocktailDB.find(x => String(x.id) === currentDetailId);
+                                    if (d) favBtn.style.color = isFav ? d.themeColor : (isLightMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.4)');
+                                }
+                            }
+                        }
+                    }, (err) => console.error("同步引擎连接失败:", err));
+                    
+                    getDoc(docRef).then(docSnap => {
+                        if (!docSnap.exists() && (favoritedIds.length > 0 || myCabinet.length > 0 || shoppingList.length > 0 || Object.keys(tastingNotes).length > 0)) {
+                            saveLocalData();
+                        }
+                    });
+                } else {
+                    window.firebaseUser = null;
+                }
+            });
+        } catch (err) {
+            console.error('云服务初始化遇到异常:', err);
+        }
+    })();
 </script>
 </body>
 </html>

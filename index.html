@@ -110,7 +110,6 @@
         body.light .iphone, body.light .liquid-bg { background-color: #F2F2F7; }
         body.light .liquid-bg::before { opacity: 0.2; filter: blur(60px) brightness(1.1); }
         
-        /* 修复白天模式文字变白的问题，将 large-title 也加入其中 */
         body.light .text-white, body.light .large-title { color: #000; }
         body.light .text-white\/5 { color: rgba(0,0,0,0.05); }
         body.light .text-white\/10 { color: rgba(0,0,0,0.1); }
@@ -202,6 +201,7 @@
             <div class="w-12 h-1.5 bg-white rounded-full"></div>
         </div>
         
+        <!-- 详情页 NavBar -->
         <div class="h-12 flex items-center justify-between px-6 relative z-30 text-white" style="margin-top: calc(16px + env(safe-area-inset-top, 24px));" id="detailNavBar">
             <button onclick="closeRecipeDetail()" class="w-10 h-10 flex items-center justify-center bg-white/5 backdrop-blur-xl rounded-full text-xl hover:bg-white/10 active:scale-75 transition-all duration-300 border border-white/10">✕</button>
             <div class="flex items-center" id="detailNavRight"></div>
@@ -212,7 +212,7 @@
     <!-- 命运卡牌弹窗 -->
     <div id="randomModal" class="hidden absolute inset-0 z-[150]"></div>
 
-    <!-- AI 加载动画 -->
+    <!-- AI 摇酒器全屏加载动画 -->
     <div id="aiLoadingModal" class="hidden absolute inset-0 z-[200] bg-[#000]/80 backdrop-blur-xl flex flex-col items-center justify-center transition-all duration-300 opacity-0 pointer-events-none">
         <div class="relative w-28 h-28 mb-6 flex justify-center items-center">
             <div class="absolute inset-0 bg-gradient-to-br from-[#64D2FF] via-[#BF5AF2] to-[#FF375F] rounded-full blur-[40px] opacity-40 animate-pulse"></div>
@@ -257,11 +257,14 @@
     let isLightMode = false; 
     let myCabinet = [];
     let shoppingList = [];
-    let shoppingCheckedList = []; 
+    let shoppingCheckedList = [];
     let tastingNotes = {};
     let currentListBase = '全部';
     let currentListFlavor = '全部风味';
     let tempRating = 0;
+
+    // --- 安全的HTML转义函数，防止用户在笔记输入特殊字符导致页面崩溃 ---
+    const escapeHTML = str => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 
     // --- 本地数据持久化引擎 ---
     function loadLocalData() {
@@ -468,7 +471,7 @@
         else if(r[3] >= 28) flavors[3] = 80; 
         else if(r[3] >= 20) flavors[3] = 60; 
         else if(r[3] >= 10) flavors[3] = 35;
-        else flavors[3] = 5; // 无酒精
+        else flavors[3] = 5; 
         
         if(ingStr.includes('果汁') || ingStr.includes('菠萝') || ingStr.includes('桃')) flavors[4] = 85;
         else if(ingStr.includes('橙') || ingStr.includes('樱桃') || ingStr.includes('薄荷')) flavors[4] = 60;
@@ -936,13 +939,14 @@
                 <div id="clearCheckedBtn" onclick="clearCheckedShoppingItems()" class="text-[12px] text-ios-blue cursor-pointer active:opacity-50 font-bold bg-ios-blue/10 px-3 py-1 rounded-full border border-ios-blue/20" style="display: ${shoppingCheckedList.length > 0 ? 'block' : 'none'};">清理已购</div>
             </div>`;
             
-            shoppingList.forEach(item => {
-                const isChecked = shoppingCheckedList.includes(item);
+            const uncheckedItems = shoppingList.filter(item => !shoppingCheckedList.includes(item));
+            const checkedItems = shoppingList.filter(item => shoppingCheckedList.includes(item));
+
+            const renderItem = (item, isChecked) => {
                 const inlineStyle = isChecked ? `background-color: #0A84FF; border-color: #0A84FF;` : '';
                 const svgOp = isChecked ? '1' : '0';
                 const textClass = isChecked ? 'opacity-30 line-through' : '';
-
-                html += `
+                return `
                 <div onclick="toggleShoppingItem(this, '${item}')" class="bg-[#1C1C1E] border border-white/5 rounded-2xl p-4 flex items-center justify-between shadow-lg active:scale-95 transition-all cursor-pointer">
                     <div class="shop-text-wrap transition-all duration-300 ${textClass}">
                         <span class="font-bold text-[16px]">${item}</span>
@@ -951,7 +955,15 @@
                         <svg viewBox="0 0 24 24" class="w-4 h-4 text-white transition-opacity duration-300 fill-current" style="opacity: ${svgOp}"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
                     </div>
                 </div>`;
-            });
+            };
+
+            uncheckedItems.forEach(item => html += renderItem(item, false));
+            
+            if(checkedItems.length > 0 && uncheckedItems.length > 0) {
+                html += `<div class="w-full h-px bg-white/10 my-4 border-t border-dashed border-white/20"></div>`;
+            }
+
+            checkedItems.forEach(item => html += renderItem(item, true));
         }
         html += `</div>`;
         modal.innerHTML = html;
@@ -1202,22 +1214,22 @@
         if(d.abv >= 20) dominantFlavors.push('高烈度');
         if(d.flavors[4] >= 55) dominantFlavors.push('果香');
         
-        let tagsHtml = dominantFlavors.slice(0, 3).map(f => `<span class="bg-black/40 text-white/90 px-2 py-0.5 rounded text-[10px] border border-white/10 whitespace-nowrap backdrop-blur-md shadow-sm">${f}</span>`).join('');
-        if(!tagsHtml) tagsHtml = `<span class="bg-black/40 text-white/90 px-2 py-0.5 rounded text-[10px] border border-white/10 whitespace-nowrap backdrop-blur-md shadow-sm">平衡</span>`;
+        let tagsHtml = dominantFlavors.slice(0, 3).map(f => `<span class="bg-black/40 text-white/90 px-2.5 py-1 rounded-md text-[12px] border border-white/10 whitespace-nowrap backdrop-blur-md shadow-sm">${f}</span>`).join('');
+        if(!tagsHtml) tagsHtml = `<span class="bg-black/40 text-white/90 px-2.5 py-1 rounded-md text-[12px] border border-white/10 whitespace-nowrap backdrop-blur-md shadow-sm">平衡</span>`;
 
         let infoPanelHtml = `
-            <div class="flex items-center justify-between bg-white/[0.06] border border-white/10 rounded-2xl p-3 mb-6 backdrop-blur-md shadow-inner relative overflow-hidden">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[${d.themeColor}] to-transparent opacity-50"></div>
+            <div class="flex items-center justify-between bg-white/[0.06] border border-white/10 rounded-3xl p-4 mb-6 backdrop-blur-md shadow-inner relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-transparent via-[${d.themeColor}] to-transparent opacity-50"></div>
                 <div class="flex flex-col gap-2 relative z-10 w-3/5 pl-2">
                     <div class="flex items-end gap-1">
-                        <span class="text-[20px] font-black leading-none" style="color: ${d.themeColor}">${d.abv}<span class="text-[12px] opacity-70">%</span></span>
-                        <span class="text-[10px] font-bold text-white/40 uppercase mb-0.5 ml-1 tracking-widest">ABV</span>
+                        <span class="text-[28px] font-black leading-none" style="color: ${d.themeColor}">${d.abv}<span class="text-[14px] opacity-70">%</span></span>
+                        <span class="text-[11px] font-bold text-white/40 uppercase mb-0.5 ml-1 tracking-widest">ABV</span>
                     </div>
-                    <div class="flex flex-wrap gap-1 mt-1">
+                    <div class="flex flex-wrap gap-1.5 mt-1">
                         ${tagsHtml}
                     </div>
                 </div>
-                <div class="w-16 h-16 relative z-10 drop-shadow-md">
+                <div class="w-20 h-20 relative z-10 drop-shadow-md">
                     ${getRadarSvg(d.flavors, d.themeColor)}
                 </div>
             </div>
@@ -1459,63 +1471,63 @@
                     </div>
                 </div>
                 
-                <!-- 新增：数据迁移入口 -->
                 <div class="bg-[#1C1C1E]/80 backdrop-blur-md rounded-[20px] p-5 flex justify-between items-center border border-white/5 shadow-xl cursor-pointer active:scale-95 transition-transform" onclick="openDataModal()">
                     <span class="font-bold text-white/90 tracking-wide text-sm">💾 数据备份与恢复</span>
                     <span class="text-white/40 text-lg">›</span>
                 </div>
             </div>
             
-            <div class="px-6 text-lg font-bold text-[#30D158] mb-4 tracking-wider flex items-center"><span class="mr-2 text-xl">✍️</span> 创作记录</div>
-            <div class="grid grid-cols-2 gap-4 px-6 mb-10">`;
+            <div class="px-6 text-[16px] font-bold text-[#30D158] mb-3 tracking-wider flex items-center"><span class="mr-2 text-xl">✍️</span> 创作记录</div>
+            <div class="grid grid-cols-2 gap-3 px-6 mb-8">`;
         
         if(!diyList.length) {
             html += `<div class="col-span-2 text-white/30 text-[13px] text-center bg-white/5 rounded-2xl py-6 border border-white/5">暂无创作，快去灵感页试试吧。</div>`;
         } else {
             diyList.forEach((d,i) => { 
-                html += `<div class="cover-card stagger-item shadow-xl" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.05, 0.8)}s" onclick="openDetail('${d.id}')">
-                    <div class="card-initial">${d.en.charAt(0)}</div>
-                    <div class="cover-label flex flex-col justify-end">
-                        <div class="text-[14px] font-bold leading-tight drop-shadow-md text-white truncate w-full">${d.zh}</div>
-                        <div class="text-[9px] font-medium opacity-60 truncate mt-0.5 tracking-wider">${d.isAI ? '✨ AI特调' : '✍️ DIY原创'}</div>
+                html += `<div class="cover-card stagger-item shadow-lg" style="aspect-ratio: 2/1; background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.05, 0.8)}s" onclick="openDetail('${d.id}')">
+                    <div class="absolute top-[-15%] right-[-5%] font-black italic text-white/5 pointer-events-none mix-blend-overlay" style="font-size: 80px;">${d.en.charAt(0)}</div>
+                    <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 via-black/40 to-transparent text-white z-10 flex flex-col justify-end h-[80%]">
+                        <div class="text-[14px] font-bold leading-tight drop-shadow-md truncate w-full">${d.zh}</div>
+                        <div class="text-[10px] font-medium opacity-70 truncate mt-1 tracking-wider">${d.isAI ? '✨ AI特调' : '✍️ DIY原创'}</div>
                     </div>
                 </div>`; 
             });
         }
         
         html += `</div>
-            <div class="px-6 text-lg font-bold text-ios-gold mb-4 tracking-wider flex items-center"><span class="mr-2 text-xl">📝</span> 品鉴笔记</div>
-            <div class="grid grid-cols-2 gap-4 px-6 mb-10">`;
+            <div class="px-6 text-[16px] font-bold text-ios-gold mb-3 tracking-wider flex items-center"><span class="mr-2 text-xl">📝</span> 品鉴笔记</div>
+            <div class="grid grid-cols-2 gap-3 px-6 mb-8">`;
             
         if(!notesList.length) {
             html += `<div class="col-span-2 text-white/30 text-[13px] text-center bg-white/5 rounded-2xl py-6 border border-white/5">暂无品鉴笔记，去给喜欢的酒打个分吧。</div>`;
         } else {
             notesList.forEach((d,i) => { 
                 const noteInfo = tastingNotes[d.id];
-                const stars = '★'.repeat(noteInfo.rating) + '☆'.repeat(5 - noteInfo.rating);
-                html += `<div class="cover-card stagger-item shadow-xl" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.05, 0.8)}s" onclick="openDetail('${d.id}')">
-                    <div class="card-initial">${d.en.charAt(0)}</div>
-                    <div class="cover-label flex flex-col justify-end">
-                        <div class="text-[14px] font-bold leading-tight drop-shadow-md text-white truncate w-full">${d.zh}</div>
-                        <div class="text-[10px] font-medium text-[#D4AF37] mt-1 drop-shadow-md tracking-widest">${noteInfo.rating > 0 ? stars : '📝 已记录'}</div>
+                const r = parseInt(noteInfo.rating) || 0;
+                const stars = '★'.repeat(r) + '☆'.repeat(5 - r);
+                html += `<div class="cover-card stagger-item shadow-lg" style="aspect-ratio: 2/1; background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.05, 0.8)}s" onclick="openDetail('${d.id}')">
+                    <div class="absolute top-[-15%] right-[-5%] font-black italic text-white/5 pointer-events-none mix-blend-overlay" style="font-size: 80px;">${d.en.charAt(0)}</div>
+                    <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 via-black/40 to-transparent text-white z-10 flex flex-col justify-end h-[80%]">
+                        <div class="text-[14px] font-bold leading-tight drop-shadow-md truncate w-full">${d.zh}</div>
+                        <div class="text-[10px] font-medium text-[#D4AF37] mt-1 drop-shadow-md tracking-widest">${r > 0 ? stars : '📝 已记录'}</div>
                     </div>
                 </div>`; 
             });
         }
         
         html += `</div>
-            <div class="px-6 text-lg font-bold text-ios-red mb-4 tracking-wider flex items-center"><span class="mr-2 text-xl">★</span> 星标珍藏</div>
-            <div class="grid grid-cols-2 gap-4 px-6 pb-40">`;
+            <div class="px-6 text-[16px] font-bold text-ios-red mb-3 tracking-wider flex items-center"><span class="mr-2 text-xl">★</span> 星标珍藏</div>
+            <div class="grid grid-cols-2 gap-3 px-6 pb-40">`;
             
         if(!fs.length) {
             html += `<div class="col-span-2 text-white/30 text-[13px] text-center bg-white/5 rounded-2xl py-6 border border-white/5">尚未收藏任何配方。</div>`;
         } else {
             fs.forEach((d,i) => { 
-                html += `<div class="cover-card stagger-item shadow-xl" style="background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.05, 0.8)}s" onclick="openDetail('${d.id}')">
-                    <div class="card-initial">${d.en.charAt(0)}</div>
-                    <div class="cover-label flex flex-col justify-end">
-                        <div class="text-[14px] font-bold leading-tight drop-shadow-md text-white truncate w-full">${d.zh}</div>
-                        <div class="text-[9px] font-medium opacity-60 truncate mt-0.5 tracking-wider">${d.en}</div>
+                html += `<div class="cover-card stagger-item shadow-lg" style="aspect-ratio: 2/1; background: ${d.cardGrad}; animation-delay: ${Math.min(i*0.05, 0.8)}s" onclick="openDetail('${d.id}')">
+                    <div class="absolute top-[-15%] right-[-5%] font-black italic text-white/5 pointer-events-none mix-blend-overlay" style="font-size: 80px;">${d.en.charAt(0)}</div>
+                    <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 via-black/40 to-transparent text-white z-10 flex flex-col justify-end h-[80%]">
+                        <div class="text-[14px] font-bold leading-tight drop-shadow-md truncate w-full">${d.zh}</div>
+                        <div class="text-[10px] font-medium opacity-70 truncate mt-1 tracking-wider">${d.en}</div>
                     </div>
                 </div>`; 
             });
@@ -1533,6 +1545,33 @@
         document.getElementById('appContent').innerHTML = ''; 
         renderProfile(); 
         showMsg(isLightMode ? '已切换至白天模式 🌞' : '已切换至黑夜模式 🌙'); 
+    };
+
+    window.setRating = function(idx) {
+        haptic('light');
+        tempRating = idx;
+        for(let i=1; i<=5; i++) {
+            const el = document.getElementById('star-'+i);
+            if(el) {
+                el.innerText = i <= idx ? '★' : '☆';
+                el.style.color = i <= idx ? '#D4AF37' : (isLightMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)');
+                el.style.textShadow = i <= idx ? '0 0 10px rgba(212,175,55,0.5)' : 'none';
+            }
+        }
+    };
+
+    window.saveNote = function(id) {
+        haptic('success');
+        const noteText = document.getElementById('noteInput') ? document.getElementById('noteInput').value.trim() : '';
+        tastingNotes[id] = { rating: tempRating, note: noteText };
+        saveLocalData();
+        showMsg('📝 专属品鉴笔记已保存！', true);
+        
+        // 动态刷新背后的个人主页列表
+        const profileTab = document.getElementById('tab-profile');
+        if(profileTab && profileTab.classList.contains('active')) {
+            renderProfile();
+        }
     };
 
     function openDetail(id) {
@@ -1629,8 +1668,9 @@
         `).join('');
 
         let starsHtml = '';
+        const currentRating = parseInt(savedNote.rating) || 0;
         for(let i=1; i<=5; i++) {
-            const isFilled = i <= savedNote.rating;
+            const isFilled = i <= currentRating;
             starsHtml += `<span id="star-${i}" onclick="setRating(${i})" class="text-3xl cursor-pointer transition-all active:scale-75" style="color: ${isFilled ? '#D4AF37' : (isLightMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)')}; text-shadow: ${isFilled ? '0 0 10px rgba(212,175,55,0.5)' : 'none'};">${isFilled ? '★' : '☆'}</span>`;
         }
 
@@ -1698,7 +1738,7 @@
                         <span class="text-[13px] font-bold text-white/50 tracking-wider uppercase">打个分数</span>
                         <div class="flex gap-1" id="starContainer">${starsHtml}</div>
                     </div>
-                    <textarea id="noteInput" rows="3" class="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-[14px] leading-relaxed text-white/90 placeholder-white/30 resize-none outline-none focus:border-white/30 transition-all shadow-inner" placeholder="记录微调心得或品鉴感受，如：今天试了，下次糖可以少加 5ml...">${savedNote.note}</textarea>
+                    <textarea id="noteInput" rows="3" class="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-[14px] leading-relaxed text-white/90 placeholder-white/30 resize-none outline-none focus:border-white/30 transition-all shadow-inner" placeholder="记录微调心得或品鉴感受，如：今天试了，下次糖可以少加 5ml...">${escapeHTML(savedNote.note || '')}</textarea>
                     <button onclick="saveNote('${d.id}')" class="w-full py-3.5 bg-white/10 text-white rounded-xl font-bold active:scale-95 transition-all shadow-md hover:bg-white/20 border border-white/10">保存笔记</button>
                 </div>
             </div>
@@ -1711,7 +1751,27 @@
         setTimeout(() => { detail.classList.add('detail-show'); startSim(d); }, 50);
     }
 
-    // --- 以下是找回的缺失函数 ---
+    window.closeRecipeDetail = function() { 
+        if(animTimer) clearInterval(animTimer); 
+        const detail = document.getElementById('recipeDetail'); 
+        detail.style.transform = ''; 
+        detail.style.backgroundColor = '';
+        detail.classList.remove('detail-show'); 
+        detail.classList.add('translate-y-full'); 
+        document.getElementById('mainWrapper').classList.remove('content-shrink'); 
+        document.getElementById('bottomTab').style.transform = 'translateY(0)'; 
+        const panel = document.getElementById('deleteMenuPanel');
+        if(panel) {
+            panel.classList.remove('opacity-100', 'scale-100');
+            panel.classList.add('opacity-0', 'scale-95', 'pointer-events-none', 'hidden');
+        }
+        
+        // 动态刷新背后的个人主页列表
+        const profileTab = document.getElementById('tab-profile');
+        if(profileTab && profileTab.classList.contains('active')) {
+            renderProfile();
+        }
+    }
 
     window.toggleDeleteMenu = function() {
         haptic('light');
@@ -1841,22 +1901,6 @@
         update(); animTimer = setInterval(update, 2400);
     }
 
-    window.closeRecipeDetail = function() { 
-        if(animTimer) clearInterval(animTimer); 
-        const detail = document.getElementById('recipeDetail'); 
-        detail.style.transform = ''; 
-        detail.style.backgroundColor = '';
-        detail.classList.remove('detail-show'); 
-        detail.classList.add('translate-y-full'); 
-        document.getElementById('mainWrapper').classList.remove('content-shrink'); 
-        document.getElementById('bottomTab').style.transform = 'translateY(0)'; 
-        const panel = document.getElementById('deleteMenuPanel');
-        if(panel) {
-            panel.classList.remove('opacity-100', 'scale-100');
-            panel.classList.add('opacity-0', 'scale-95', 'pointer-events-none', 'hidden');
-        }
-    }
-
     window.toggleFavorite = function() { 
         const idx = favoritedIds.indexOf(currentDetailId); 
         const d = cocktailDB.find(x => x.id === currentDetailId);
@@ -1884,8 +1928,8 @@
         
         if(c.dataset.checked === '1') {
             c.dataset.checked = '0';
-            c.style.backgroundColor = '';
-            c.style.borderColor = '';
+            c.style.backgroundColor = 'transparent';
+            c.style.borderColor = 'rgba(255,255,255,0.3)';
             svg.style.opacity = '0';
             textWrap.classList.remove('opacity-30', 'line-through');
         } else {

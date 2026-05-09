@@ -35,6 +35,13 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         /* 高级悬浮胶囊导航栏 */
+        @keyframes tab-haptic-pop {
+            0% { transform: translateY(0) scale(1); }
+            35% { transform: translateY(3px) scale(0.965); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        #bottomTab.haptic-tab-bump { animation: tab-haptic-pop 0.24s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
         .tab-bar-container { 
             position: absolute; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); left: 6%; right: 6%; width: 88%; 
             display: flex; justify-content: space-around; align-items: center; z-index: 100; transition: transform 0.5s; 
@@ -277,14 +284,52 @@
         } catch(e) {}
     }
 
-    const haptic = (type = 'light') => {
-        if (!navigator || !navigator.vibrate) return;
+    const HAPTIC_PATTERNS = {
+        selection: [11],
+        light: [17],
+        medium: [20, 36, 24],
+        heavy: [45, 28, 52],
+        success: [14, 34, 18, 34, 22, 40, 28],
+        rigid: [8, 14, 8],
+    };
+    let _hapticLightUntil = 0;
+    const hapticSupportsVibrate = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+
+    function hapticTabBarBump() {
+        const bar = document.getElementById('bottomTab');
+        if (!bar) return;
+        bar.classList.remove('haptic-tab-bump');
+        void bar.offsetWidth;
+        bar.classList.add('haptic-tab-bump');
+        clearTimeout(bar._hapticBumpT);
+        bar._hapticBumpT = setTimeout(() => bar.classList.remove('haptic-tab-bump'), 280);
+    }
+
+    const haptic = (type = 'light', opts = {}) => {
+        const { force = false, tabBarVisual = false } = opts;
         try {
-            if (type === 'light') navigator.vibrate(10); 
-            else if (type === 'medium') navigator.vibrate([15, 30, 15]); 
-            else if (type === 'heavy') navigator.vibrate([40, 30, 40]); 
-            else if (type === 'success') navigator.vibrate([10, 30, 20, 30, 30]); 
-        } catch(e){}
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        } catch (e) {}
+
+        const pattern = HAPTIC_PATTERNS[type] || HAPTIC_PATTERNS.light;
+        const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+
+        if (!force && (type === 'light' || type === 'selection' || type === 'rigid')) {
+            if (now < _hapticLightUntil) return;
+            _hapticLightUntil = now + 48;
+        }
+
+        let pulseOk = false;
+        if (hapticSupportsVibrate) {
+            try {
+                navigator.vibrate(0);
+                const arr = Array.isArray(pattern) ? pattern : [pattern];
+                pulseOk = navigator.vibrate(arr) !== false;
+            } catch (e) {}
+        }
+
+        const tabVis = opts.tabBarVisual === true;
+        if (tabVis && !pulseOk) hapticTabBarBump();
     };
 
     const modernGradients = [
@@ -576,7 +621,7 @@
     }
 
     function switchPage(pageId, el, filter=null, direction='fade') {
-        haptic('light'); 
+        haptic('selection', { tabBarVisual: true }); 
         if(animTimer) clearInterval(animTimer);
         const content = document.getElementById('appContent');
         content.style.transition = 'all 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
@@ -606,10 +651,10 @@
         if(el) { document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active')); el.classList.add('active'); }
     }
 
-    window.filterListByBase = function(f) { haptic('light'); currentListBase = f; renderListHTMLOnly(); };
+    window.filterListByBase = function(f) { haptic('selection'); currentListBase = f; renderListHTMLOnly(); };
 
     window.toggleSort = function() {
-        haptic('light');
+        haptic('rigid');
         currentSort = currentSort === 'default' ? 'ratingDesc' : 'default';
         const btn = document.getElementById('sortBtn');
         if (btn) {
@@ -959,6 +1004,87 @@
             renderShoppingContent();
         }, 350);
     }
+
+    window.toggleIngredient = function(el, themeColor, total) {
+        haptic('light');
+        const c = el.querySelector('.chk');
+        const svg = c && c.querySelector('svg');
+        const textWrap = el.querySelector('.ing-text-wrap');
+        if (!c) return;
+        const inactiveBorder = isLightMode ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.3)';
+
+        if (c.dataset.checked === '1') {
+            c.dataset.checked = '0';
+            c.style.backgroundColor = '';
+            c.style.borderColor = inactiveBorder;
+            c.style.boxShadow = 'none';
+            if (svg) svg.style.opacity = '0';
+            if (textWrap) {
+                textWrap.classList.remove('opacity-30', 'line-through');
+            }
+        } else {
+            c.dataset.checked = '1';
+            c.style.backgroundColor = themeColor;
+            c.style.borderColor = themeColor;
+            c.style.boxShadow = `0 0 12px ${themeColor}66`;
+            if (svg) svg.style.opacity = '1';
+            if (textWrap) textWrap.classList.add('opacity-30', 'line-through');
+        }
+
+        const detail = document.getElementById('detailContent');
+        if (!detail) return;
+        const n = detail.querySelectorAll('.ing-check-row .chk[data-checked="1"]').length;
+        const counter = document.getElementById('ingCounter');
+        const bar = document.getElementById('ingProgressBar');
+        if (counter) counter.textContent = String(n);
+        if (bar && total > 0) bar.style.width = `${(n / total) * 100}%`;
+    };
+
+    window.toggleFavorite = function() {
+        const id = currentDetailId;
+        if (!id) return;
+        haptic('medium');
+        const d = cocktailDB.find(x => String(x.id) === String(id));
+        if (!d) return;
+
+        const idx = favoritedIds.findIndex(x => String(x) === String(id));
+        if (idx > -1) favoritedIds.splice(idx, 1);
+        else favoritedIds.push(d.id);
+
+        saveLocalData();
+
+        const isFav = favoritedIds.some(x => String(x) === String(id));
+        const btn = document.getElementById('detailFavBtn');
+        if (btn) {
+            btn.innerText = isFav ? '★' : '☆';
+            btn.style.color = isFav ? d.themeColor : (isLightMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.4)');
+        }
+
+        if (document.getElementById('recipeGrid')) renderListHTMLOnly();
+        const profileTab = document.getElementById('tab-profile');
+        if (profileTab && profileTab.classList.contains('active')) renderProfile();
+    };
+
+    window.shareRecipe = function() {
+        const id = currentDetailId;
+        if (!id) return;
+        const d = cocktailDB.find(x => String(x.id) === String(id));
+        if (!d) return;
+        haptic('light');
+        const lines = [`${d.zh} (${d.en})`, '', '材料：', ...d.ingredients, '', '步骤：', ...d.steps.map((s, i) => `${i + 1}. ${s}`)];
+        const text = lines.join('\n');
+        if (navigator.share) {
+            navigator.share({ title: d.zh, text }).catch(() => {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(() => showMsg('配方已复制到剪贴板', true)).catch(() => showMsg('无法分享或复制'));
+                }
+            });
+        } else if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => showMsg('配方已复制到剪贴板', true)).catch(() => showMsg('复制失败'));
+        } else {
+            showMsg('当前环境不支持分享');
+        }
+    };
 
     window.clearCheckedShoppingItems = function() {
         if(shoppingCheckedList.length === 0) return;
@@ -1520,7 +1646,7 @@
     }
 
     function renderProfile() {
-        let fs = cocktailDB.filter(d => favoritedIds.includes(d.id) && !(d.isAI && !d.saved));
+        let fs = cocktailDB.filter(d => favoritedIds.some(fid => String(fid) === String(d.id)) && !(d.isAI && !d.saved));
         let diyList = cocktailDB.filter(d => String(d.id).startsWith('diy_') && !(d.isAI && !d.saved));
         let notesList = cocktailDB.filter(d => tastingNotes[d.id] && (tastingNotes[d.id].note || tastingNotes[d.id].rating > 0) && !(d.isAI && !d.saved));
 
@@ -1645,7 +1771,7 @@
         saveLocalData(); 
         document.getElementById('appContent').innerHTML = ''; 
         renderProfile(); 
-        showMsg(isLightMode ? '已切换至白天模式 🌞' : '已切换至黑夜模式 🌙'); 
+        showMsg(isLightMode ? '已切换至白天模式 .>_<.' : '已切换至黑夜模式 .>_<.'); 
     };
 
     window.setRating = function(id, idx) {
@@ -1696,7 +1822,7 @@
         const detail = document.getElementById('recipeDetail');
         detail.style.setProperty('--bg-grad', d.palette);
         
-        const isFav = favoritedIds.includes(id);
+        const isFav = favoritedIds.some(x => String(x) === String(id));
         const favColor = isFav ? d.themeColor : (isLightMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.4)');
         
         const savedNote = tastingNotes[id] || { rating: 0, note: '' };
@@ -1735,6 +1861,8 @@
         document.getElementById('detailFavBtn').innerText = isFav ? '★' : '☆';
         document.getElementById('toastIcon').style.color = d.themeColor;
 
+        const ingChkBorderIdle = isLightMode ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.3)';
+
         const ingredientsHtml = d.ingredients.map((ingString, index) => {
             let parts = ingString.split(' ');
             let nameZh = parts[0];
@@ -1750,10 +1878,10 @@
             let borderClass = index === d.ingredients.length - 1 ? '' : 'border-b border-white/[0.06]';
 
             return `
-            <div class="flex items-center justify-between px-5 py-4 ${borderClass} cursor-pointer active:bg-white/5 transition-colors" 
+            <div class="ing-check-row flex items-center justify-between px-5 py-4 ${borderClass} cursor-pointer active:bg-white/5 transition-colors" 
                  onclick="toggleIngredient(this, '${d.themeColor}', ${d.ingredients.length})">
                 <div class="flex items-center w-full">
-                    <div class="chk w-[18px] h-[18px] rounded-full border border-white/30 mr-4 flex-shrink-0 flex items-center justify-center transition-all duration-300" data-checked="0">
+                    <div class="chk w-[18px] h-[18px] rounded-full border mr-4 flex-shrink-0 flex items-center justify-center transition-all duration-300" style="border-color: ${ingChkBorderIdle};" data-checked="0">
                         <svg viewBox="0 0 24 24" class="w-3 h-3 text-white opacity-0 transition-opacity duration-300 fill-current"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
                     </div>
                     <div class="ing-text-wrap flex justify-between items-center w-full transition-all duration-300">
@@ -1923,7 +2051,7 @@
         const idx = cocktailDB.findIndex(x => x.id === id);
         if(idx > -1) cocktailDB.splice(idx, 1);
         
-        const favIdx = favoritedIds.indexOf(id);
+        const favIdx = favoritedIds.findIndex(fid => String(fid) === String(id));
         if(favIdx > -1) favoritedIds.splice(favIdx, 1);
         
         saveLocalData();
@@ -2064,7 +2192,7 @@
         if (startY === 0 || !isSwiping) return;
         let deltaY = currentY - startY;
         detailEl.style.transition = 'all 0.5s cubic-bezier(0.32, 0.72, 0, 1)'; 
-        if (deltaY > 140) { haptic('light'); closeRecipeDetail(); } 
+        if (deltaY > 140) { haptic('medium', { force: true }); closeRecipeDetail(); } 
         else { if (!detailEl.classList.contains('translate-y-full')) { detailEl.style.transform = ''; detailEl.style.backgroundColor = ''; } }
         startY = 0; currentY = 0; startX = 0; isSwiping = false;
     });

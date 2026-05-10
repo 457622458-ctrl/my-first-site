@@ -79,9 +79,10 @@
 
         .large-title { font-size: 38px; font-weight: 900; padding: 60px 24px 10px 24px; letter-spacing: -1px; color: white; transition: all 0.3s ease; display: flex; flex-direction: column; }
 
-        #recipeDetail { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); will-change: transform, background-color; background: #050505; }
-        .detail-show .detail-inner { opacity: 1; transform: translateY(0); }
-        .detail-inner { transition: all 0.3s ease 0.1s; opacity: 0; transform: translateY(30px); will-change: transform, opacity; }
+        /* 优化详情页的性能：去除多余的 background-color 渲染，启用 translate3d 硬件加速 */
+        #recipeDetail { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); will-change: transform; background: #050505; }
+        .detail-show .detail-inner { opacity: 1; transform: translate3d(0, 0, 0); }
+        .detail-inner { transition: all 0.3s ease 0.1s; opacity: 0; transform: translate3d(0, 30px, 0); will-change: transform, opacity; }
 
         .ing-tag { border: 1px solid rgba(255,255,255,0.12); color: #AAA; border-radius: 20px; padding: 7px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); background: rgba(255,255,255,0.06); white-space: nowrap; will-change: transform; transform: translateZ(0); }
         .ing-tag:active { transform: scale(0.92) translateZ(0); }
@@ -639,38 +640,44 @@
     }
 
     function switchPage(pageId, el, filter=null, direction='fade') {
-        // 如果点击的是当前所在页面，则拦截刷新，仅保留轻微触控反馈
         if (currentPage === pageId) {
             haptic('light', { tabBarVisual: true });
             return;
         }
-        currentPage = pageId; // 更新当前页面记录
+        currentPage = pageId;
 
         haptic('selection', { tabBarVisual: true }); 
         if(animTimer) clearInterval(animTimer);
         const content = document.getElementById('appContent');
         content.style.transition = 'all 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
         content.style.opacity = '0';
-        if(direction === 'forward') content.style.transform = 'translateX(-30px)';
-        else if(direction === 'backward') content.style.transform = 'translateX(30px)';
-        else content.style.transform = 'scale(0.97)';
+        
+        // 启用 3D 硬件加速
+        if(direction === 'forward') content.style.transform = 'translate3d(-30px, 0, 0)';
+        else if(direction === 'backward') content.style.transform = 'translate3d(30px, 0, 0)';
+        else content.style.transform = 'scale(0.97) translate3d(0, 0, 0)';
         
         setTimeout(() => {
+            // 这里替换大规模的 DOM
             if(pageId==='recipes') renderList(filter);
             else if(pageId==='cabinet') renderCabinet();
             else if(pageId==='randomizer') renderShuffle();
             else if(pageId==='profile') renderProfile();
             
             content.style.transition = 'none';
-            if(direction === 'forward') content.style.transform = 'translateX(40px)';
-            else if(direction === 'backward') content.style.transform = 'translateX(-40px)';
-            else content.style.transform = 'scale(1.02)';
+            if(direction === 'forward') content.style.transform = 'translate3d(40px, 0, 0)';
+            else if(direction === 'backward') content.style.transform = 'translate3d(-40px, 0, 0)';
+            else content.style.transform = 'scale(1.02) translate3d(0, 0, 0)';
             
-            void content.offsetWidth; 
-            content.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
-            content.style.opacity = '1';
-            content.style.transform = 'translateX(0) scale(1)';
-            content.scrollTop = 0;
+            // 使用双重 requestAnimationFrame 将“DOM渲染”与“动画开始”解耦，彻底解决切换卡顿掉帧
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    content.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
+                    content.style.opacity = '1';
+                    content.style.transform = 'translate3d(0, 0, 0) scale(1)';
+                    content.scrollTop = 0;
+                });
+            });
         }, 250);
 
         if(el) { document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active')); el.classList.add('active'); }
@@ -2190,7 +2197,7 @@
         if(animTimer) clearInterval(animTimer); 
         const detail = document.getElementById('recipeDetail'); 
         detail.style.transform = ''; 
-        detail.style.backgroundColor = '';
+        // 去除了背景颜色的清理，减轻重绘负担
         detail.classList.remove('detail-show'); 
         detail.classList.add('translate-y-full'); 
         document.getElementById('mainWrapper').classList.remove('content-shrink'); 
@@ -2360,9 +2367,8 @@
             if (rafId) cancelAnimationFrame(rafId);
             rafId = requestAnimationFrame(() => {
                 let dampedY = deltaY * (1 - (deltaY / (window.innerHeight * 2.5)));
-                detailEl.style.transform = `translateY(${dampedY}px)`;
-                let fadeOpacity = 1 - (deltaY / window.innerHeight);
-                detailEl.style.backgroundColor = isLightMode ? `rgba(242, 242, 247, ${Math.max(fadeOpacity, 0.4)})` : `rgba(10, 10, 12, ${Math.max(fadeOpacity, 0.2)})`;
+                // 仅利用 transform 进行硬件加速平移，彻底移除耗性能的背景色重绘
+                detailEl.style.transform = `translate3d(0, ${dampedY}px, 0)`;
             });
         }
     }, {passive: false});
@@ -2371,9 +2377,15 @@
         if (startY === 0 || !isSwiping) return;
         if (rafId) cancelAnimationFrame(rafId);
         let deltaY = currentY - startY;
-        detailEl.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)'; 
-        if (deltaY > 140) { haptic('medium', { force: true }); closeRecipeDetail(); } 
-        else { if (!detailEl.classList.contains('translate-y-full')) { detailEl.style.transform = ''; detailEl.style.backgroundColor = ''; } }
+        detailEl.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)'; 
+        if (deltaY > 140) { 
+            haptic('medium', { force: true }); 
+            closeRecipeDetail(); 
+        } else { 
+            if (!detailEl.classList.contains('translate-y-full')) { 
+                detailEl.style.transform = 'translate3d(0,0,0)'; 
+            } 
+        }
         startY = 0; currentY = 0; startX = 0; isSwiping = false;
     });
 

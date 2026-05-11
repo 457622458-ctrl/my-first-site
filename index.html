@@ -17,6 +17,7 @@
         }
     </script>
     <style>
+        * { -webkit-tap-highlight-color: transparent; }
         body { background-color: #000000; margin: 0; padding: 0; width: 100vw; height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
         .iphone { width: 100%; height: 100%; position: relative; overflow: hidden; display: flex; flex-direction: column; background: transparent; z-index: 10; }
         
@@ -27,8 +28,8 @@
         .ambient-orb-2 { bottom: -20%; right: -10%; width: 70vw; height: 70vw; background: rgba(10, 132, 255, 0.18); animation-delay: -10s; animation-direction: alternate-reverse; }
         @keyframes float-orb { 0% { transform: translate3d(0, 0, 0) scale(1); } 100% { transform: translate3d(10vw, 10vh, 0) scale(1.2); } }
 
-        .content-wrap { flex: 1; display: flex; flex-direction: column; height: 100%; transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1); position: relative; overflow: hidden; }
-        .content-shrink { transform: scale(0.92) translateY(-10px) translateZ(0); border-radius: 40px; opacity: 0.6; pointer-events: none; filter: blur(5px); }
+        .content-wrap { flex: 1; display: flex; flex-direction: column; height: 100%; transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1); position: relative; overflow: hidden; will-change: transform, opacity; }
+        .content-shrink { transform: scale(0.92) translate3d(0, -10px, 0); border-radius: 40px; opacity: 0.4; pointer-events: none; }
         .content { flex: 1; overflow-y: auto; scroll-behavior: smooth; width: 100%; height: 100%; padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); position: relative; z-index: 10; }
         
         .content::-webkit-scrollbar, .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -78,7 +79,7 @@
         .large-title { font-size: 38px; font-weight: 900; padding: 60px 24px 10px 24px; letter-spacing: -1px; color: white; transition: all 0.3s ease; display: flex; flex-direction: column; }
 
         /* 优化详情页的性能：去除多余的 background-color 渲染，启用 translate3d 硬件加速 */
-        #recipeDetail { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); background: #050505; }
+        #recipeDetail { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); background: #050505; will-change: transform; }
         .detail-show .detail-inner { opacity: 1; transform: translate3d(0, 0, 0); }
         .detail-inner { transition: all 0.3s ease 0.1s; opacity: 0; transform: translate3d(0, 30px, 0); }
 
@@ -2092,11 +2093,11 @@
 
         let stepsHtml = d.steps.map((s, i) => `
             <div class="relative flex items-start px-5 py-4 cursor-pointer active:opacity-70 transition-opacity" data-done="0" id="step-item-${i}" onclick="toggleStep(${i}, ${d.steps.length}, '${isLightMode ? d.darkerColor : d.themeColor}')">
-                <div class="relative z-10 w-7 h-7 rounded-full border flex flex-shrink-0 items-center justify-center mr-4 mt-0.5 transition-all duration-300 shadow-sm" style="background-color: ${isLightMode ? '#E5E5EA' : '#121214'}; border-color: ${isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'}" id="step-num-bg-${i}">
-                    <span class="font-black text-[12px] transition-colors duration-300" style="color: ${isLightMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)'}" id="step-num-${i}">${i+1}</span>
+                <div class="relative z-10 w-6 h-6 rounded-full border flex flex-shrink-0 items-center justify-center mr-4 transition-all duration-300 shadow-sm" style="background-color: ${isLightMode ? '#E5E5EA' : '#121214'}; border-color: ${isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'}" id="step-num-bg-${i}">
+                    <span class="font-black text-[11px] transition-colors duration-300" style="color: ${isLightMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)'}" id="step-num-${i}">${i+1}</span>
                 </div>
-                <div class="flex-1 pb-2">
-                    <span id="step-text-${i}" class="text-[15px] font-bold leading-[1.6] tracking-wide transition-all duration-300 dynamic-text" style="--c-dark: rgba(255,255,255,0.85); --c-light: rgba(0,0,0,0.85);">${s}</span>
+                <div class="flex-1">
+                    <span id="step-text-${i}" class="text-[15px] font-bold leading-6 tracking-wide transition-all duration-300 dynamic-text block" style="--c-dark: rgba(255,255,255,0.85); --c-light: rgba(0,0,0,0.85);">${s}</span>
                 </div>
             </div>
         `).join('');
@@ -2202,7 +2203,6 @@
         document.getElementById('mainWrapper').classList.add('content-shrink');
         document.getElementById('bottomTab').style.transform = 'translateY(120px)';
         
-        // 【关键修复】同步重置硬件加速的内联坐标，覆盖原本隐藏的 100%
         detail.style.transform = 'translate3d(0, 0, 0)';
         detail.classList.remove('translate-y-full');
         setTimeout(() => { detail.classList.add('detail-show'); startSim(d); }, 50);
@@ -2222,6 +2222,7 @@
         }
         mainWrap.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
         mainWrap.style.transform = '';
+        mainWrap.style.opacity = '';
         
         detail.classList.remove('detail-show'); 
         detail.classList.add('translate-y-full'); 
@@ -2234,17 +2235,14 @@
             panel.classList.add('opacity-0', 'scale-95', 'pointer-events-none', 'hidden');
         }
         
-        // 【核心优化】将所有会引发重排(Reflow)的 DOM 渲染操作推迟到 400ms 后(即动画结束后)执行，彻底告别卡顿
         setTimeout(() => {
             const profileTab = document.getElementById('tab-profile');
             if(profileTab && profileTab.classList.contains('active')) {
                 renderProfile();
             }
-            // 清理内部SVG缓存以释放内存
             const stage = document.getElementById('animationStage');
             if (stage) stage.innerHTML = '';
             
-            // 退出动画完成后，将DOM瞬间重置到底部隐藏状态，确保下次能正常从下往上弹出
             if (slideRight === true) {
                 detail.style.transition = 'none';
                 detail.style.transform = 'translate3d(0, 100%, 0)';
@@ -2286,6 +2284,9 @@
 
     window.toggleStep = function(idx, totalLength, themeColor) {
         haptic('light');
+        // 用户手动点击步骤时，清除定格成品的定时器
+        if (animTimer) { clearTimeout(animTimer); clearInterval(animTimer); }
+        
         const drink = cocktailDB.find(x => x.id === currentDetailId);
         
         const inactiveBg = isLightMode ? '#E5E5EA' : '#121214';
@@ -2294,6 +2295,8 @@
         const inactiveAxis = isLightMode ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
 
         const item = document.getElementById('step-item-' + idx);
+        if(!item) return;
+        
         const numBg = document.getElementById('step-num-bg-' + idx);
         const numText = document.getElementById('step-num-' + idx);
         const textEl = document.getElementById('step-text-' + idx);
@@ -2328,7 +2331,17 @@
     window.startSim = function(drink) {
         const stage = document.getElementById('animationStage');
         if(stage && drink.steps && drink.steps.length > 0) {
+            if(animTimer) { clearInterval(animTimer); clearTimeout(animTimer); }
+            
+            // 初始展示第一步的入场动效（不再自动勾选下方的文字步骤）
             stage.innerHTML = renderStepSvg(drink, drink.steps[0], 0);
+            
+            // 2.5秒后，动画结束，自动定格为没有任何工具遮挡的最终成品图
+            animTimer = setTimeout(() => {
+                stage.innerHTML = window.getGlassSvgCover(drink.glass, drink.themeColor);
+            }, 2500);
+        } else if (stage) {
+            stage.innerHTML = window.getGlassSvgCover(drink.glass, drink.themeColor);
         }
     };
 
@@ -2347,6 +2360,7 @@
         let isDraggingVertical = false;
         let isDraggingHorizontal = false;
         let isEdgeSwipe = false;
+        let ticking = false;
 
         detailEl.addEventListener('touchstart', (e) => {
             startX = e.touches[0].clientX;
@@ -2376,28 +2390,38 @@
                 }
             }
 
-            // 处理边缘右滑
-            if (isDraggingHorizontal) {
+            // 处理边缘右滑与下拉 (引入 requestAnimationFrame 进行性能节流)
+            if (isDraggingHorizontal || isDraggingVertical) {
                 if (e.cancelable) e.preventDefault(); 
-                currentX = deltaX;
-                if (currentX > 0) {
-                    detailEl.style.transform = `translate3d(${currentX}px, 0, 0)`;
-                    const progress = Math.min(currentX / window.innerWidth, 1);
-                    const scale = 0.92 + (0.08 * progress);
-                    const ty = -10 * (1 - progress);
-                    mainWrap.style.transform = `scale(${scale}) translateY(${ty}px) translateZ(0)`;
-                }
-            } 
-            // 处理下拉
-            else if (isDraggingVertical) {
-                if (e.cancelable) e.preventDefault(); 
-                currentY = deltaY;
-                if (currentY > 0) {
-                    detailEl.style.transform = `translate3d(0, ${currentY}px, 0)`;
-                    const progress = Math.min(currentY / window.innerHeight, 1);
-                    const scale = 0.92 + (0.08 * progress);
-                    const ty = -10 * (1 - progress);
-                    mainWrap.style.transform = `scale(${scale}) translateY(${ty}px) translateZ(0)`;
+                
+                if (!ticking) {
+                    window.requestAnimationFrame(() => {
+                        if (isDraggingHorizontal) {
+                            currentX = deltaX;
+                            if (currentX > 0) {
+                                detailEl.style.transform = `translate3d(${currentX}px, 0, 0)`;
+                                const progress = Math.min(currentX / window.innerWidth, 1);
+                                const scale = 0.92 + (0.08 * progress);
+                                const ty = -10 * (1 - progress);
+                                const op = 0.4 + (0.6 * progress);
+                                mainWrap.style.transform = `scale(${scale}) translate3d(0, ${ty}px, 0)`;
+                                mainWrap.style.opacity = op;
+                            }
+                        } else if (isDraggingVertical) {
+                            currentY = deltaY;
+                            if (currentY > 0) {
+                                detailEl.style.transform = `translate3d(0, ${currentY}px, 0)`;
+                                const progress = Math.min(currentY / window.innerHeight, 1);
+                                const scale = 0.92 + (0.08 * progress);
+                                const ty = -10 * (1 - progress);
+                                const op = 0.4 + (0.6 * progress);
+                                mainWrap.style.transform = `scale(${scale}) translate3d(0, ${ty}px, 0)`;
+                                mainWrap.style.opacity = op;
+                            }
+                        }
+                        ticking = false;
+                    });
+                    ticking = true;
                 }
             }
         }, { passive: false });
@@ -2412,7 +2436,8 @@
                     detailEl.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
                     detailEl.style.transform = 'translate3d(0, 0, 0)';
                     mainWrap.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
-                    mainWrap.style.transform = 'scale(0.92) translateY(-10px) translateZ(0)';
+                    mainWrap.style.transform = 'scale(0.92) translate3d(0, -10px, 0)';
+                    mainWrap.style.opacity = '0.4';
                 }
             } else if (isDraggingVertical) {
                 // 下拉超过 120px 阈值，触发关闭
@@ -2422,7 +2447,8 @@
                     detailEl.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
                     detailEl.style.transform = 'translate3d(0, 0, 0)';
                     mainWrap.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
-                    mainWrap.style.transform = 'scale(0.92) translateY(-10px) translateZ(0)'; 
+                    mainWrap.style.transform = 'scale(0.92) translate3d(0, -10px, 0)'; 
+                    mainWrap.style.opacity = '0.4';
                 }
             }
             

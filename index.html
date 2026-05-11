@@ -17,7 +17,19 @@
         }
     </script>
     <style>
-        * { -webkit-tap-highlight-color: transparent; }
+        * { 
+            -webkit-tap-highlight-color: transparent !important; 
+            -webkit-touch-callout: none; 
+            outline: none !important; 
+        }
+        html, body { 
+            -webkit-user-select: none; 
+            user-select: none; 
+        }
+        input, textarea { 
+            -webkit-user-select: auto; 
+            user-select: auto; 
+        }
         body { background-color: #000000; margin: 0; padding: 0; width: 100vw; height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
         .iphone { width: 100%; height: 100%; position: relative; overflow: hidden; display: flex; flex-direction: column; background: transparent; z-index: 10; }
         
@@ -2209,7 +2221,7 @@
     }
 
     window.closeRecipeDetail = function(slideRight = false) { 
-        if(animTimer) clearInterval(animTimer); 
+        if(animTimer) { clearInterval(animTimer); clearTimeout(animTimer); }
         const detail = document.getElementById('recipeDetail'); 
         const mainWrap = document.getElementById('mainWrapper');
         
@@ -2220,13 +2232,15 @@
         } else {
             detail.style.transform = 'translate3d(0, 100%, 0)'; 
         }
+        
+        // 交由原生 CSS 接管复杂的背景恢复动画，彻底解放 JS 性能
         mainWrap.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
         mainWrap.style.transform = '';
         mainWrap.style.opacity = '';
+        mainWrap.classList.remove('content-shrink'); 
         
         detail.classList.remove('detail-show'); 
         detail.classList.add('translate-y-full'); 
-        mainWrap.classList.remove('content-shrink'); 
         document.getElementById('bottomTab').style.transform = 'translateY(0)'; 
         
         const panel = document.getElementById('deleteMenuPanel');
@@ -2333,7 +2347,7 @@
         if(stage && drink.steps && drink.steps.length > 0) {
             if(animTimer) { clearInterval(animTimer); clearTimeout(animTimer); }
             
-            // 初始展示第一步的入场动效（不再自动勾选下方的文字步骤）
+            // 初始展示第一步的入场动效
             stage.innerHTML = renderStepSvg(drink, drink.steps[0], 0);
             
             // 2.5秒后，动画结束，自动定格为没有任何工具遮挡的最终成品图
@@ -2349,10 +2363,9 @@
         loadLocalData();
         switchPage('recipes', document.getElementById('tab-recipes'));
 
-        // 【手势交互】添加原生的物理下拉与边缘右滑手势支持
+        // 【极速渲染级手势交互】边缘右滑与下拉手势
         const detailEl = document.getElementById('recipeDetail');
         const detailContent = document.getElementById('detailContent');
-        const mainWrap = document.getElementById('mainWrapper');
         let startY = 0;
         let startX = 0;
         let currentY = 0;
@@ -2369,28 +2382,33 @@
             isDraggingHorizontal = false;
             // 判断是否从屏幕左侧边缘 (距离左边缘 40px 以内) 开始滑动
             isEdgeSwipe = startX < 40;
+            
+            // 确保页面内部滚动到了最顶端，才允许下拉退出
+            if (detailContent.scrollTop > 5) {
+                isEdgeSwipe = false; 
+            }
         }, { passive: true });
 
         detailEl.addEventListener('touchmove', (e) => {
             let deltaX = e.touches[0].clientX - startX;
             let deltaY = e.touches[0].clientY - startY;
 
-            // 首次移动时确定手势的唯一方向（避免斜划产生冲突）
+            // 首次移动时确定手势的唯一方向
             if (!isDraggingVertical && !isDraggingHorizontal) {
                 if (isEdgeSwipe && deltaX > Math.abs(deltaY) && deltaX > 0) {
                     isDraggingHorizontal = true;
                     detailEl.style.transition = 'none';
-                    mainWrap.style.transition = 'none';
-                } else if (deltaY > 0 && detailContent.scrollTop <= 5) {
+                    // 不再修改 mainWrap 的 transition
+                } else if (deltaY > 0 && detailContent.scrollTop <= 0) {
                     isDraggingVertical = true;
                     detailEl.style.transition = 'none';
-                    mainWrap.style.transition = 'none';
+                    // 不再修改 mainWrap 的 transition
                 } else {
                     return;
                 }
             }
 
-            // 处理边缘右滑与下拉 (引入 requestAnimationFrame 进行性能节流)
+            // 处理边缘右滑与下拉 (完全解绑背景缩放，性能释放至最大)
             if (isDraggingHorizontal || isDraggingVertical) {
                 if (e.cancelable) e.preventDefault(); 
                 
@@ -2399,24 +2417,14 @@
                         if (isDraggingHorizontal) {
                             currentX = deltaX;
                             if (currentX > 0) {
+                                // 仅仅移动顶层，背景不参与动态渲染
                                 detailEl.style.transform = `translate3d(${currentX}px, 0, 0)`;
-                                const progress = Math.min(currentX / window.innerWidth, 1);
-                                const scale = 0.92 + (0.08 * progress);
-                                const ty = -10 * (1 - progress);
-                                const op = 0.4 + (0.6 * progress);
-                                mainWrap.style.transform = `scale(${scale}) translate3d(0, ${ty}px, 0)`;
-                                mainWrap.style.opacity = op;
                             }
                         } else if (isDraggingVertical) {
                             currentY = deltaY;
                             if (currentY > 0) {
+                                // 仅仅移动顶层，背景不参与动态渲染
                                 detailEl.style.transform = `translate3d(0, ${currentY}px, 0)`;
-                                const progress = Math.min(currentY / window.innerHeight, 1);
-                                const scale = 0.92 + (0.08 * progress);
-                                const ty = -10 * (1 - progress);
-                                const op = 0.4 + (0.6 * progress);
-                                mainWrap.style.transform = `scale(${scale}) translate3d(0, ${ty}px, 0)`;
-                                mainWrap.style.opacity = op;
                             }
                         }
                         ticking = false;
@@ -2435,20 +2443,15 @@
                     // 未达到阈值，弹性回弹回原位
                     detailEl.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
                     detailEl.style.transform = 'translate3d(0, 0, 0)';
-                    mainWrap.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
-                    mainWrap.style.transform = 'scale(0.92) translate3d(0, -10px, 0)';
-                    mainWrap.style.opacity = '0.4';
                 }
             } else if (isDraggingVertical) {
                 // 下拉超过 120px 阈值，触发关闭
                 if (currentY > 120) {
                     closeRecipeDetail(false);
                 } else if (currentY > 0) {
+                    // 未达到阈值，弹性回弹回原位
                     detailEl.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
                     detailEl.style.transform = 'translate3d(0, 0, 0)';
-                    mainWrap.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
-                    mainWrap.style.transform = 'scale(0.92) translate3d(0, -10px, 0)'; 
-                    mainWrap.style.opacity = '0.4';
                 }
             }
             

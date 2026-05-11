@@ -22,12 +22,12 @@
         
         /* 动态极光环境背景 - 颜色加深加深对比度 */
         .ambient-bg { position: fixed; inset: 0; z-index: 0; background: #000000; pointer-events: none; overflow: hidden; }
-        .ambient-orb { position: absolute; border-radius: 50%; mix-blend-mode: screen; filter: blur(70px); will-change: transform; animation: float-orb 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); }
+        .ambient-orb { position: absolute; border-radius: 50%; mix-blend-mode: screen; filter: blur(70px); animation: float-orb 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); }
         .ambient-orb-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background: rgba(94, 92, 230, 0.18); }
         .ambient-orb-2 { bottom: -20%; right: -10%; width: 70vw; height: 70vw; background: rgba(10, 132, 255, 0.18); animation-delay: -10s; animation-direction: alternate-reverse; }
         @keyframes float-orb { 0% { transform: translate3d(0, 0, 0) scale(1); } 100% { transform: translate3d(10vw, 10vh, 0) scale(1.2); } }
 
-        .content-wrap { flex: 1; display: flex; flex-direction: column; height: 100%; transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1); position: relative; overflow: hidden; will-change: transform, filter, opacity; }
+        .content-wrap { flex: 1; display: flex; flex-direction: column; height: 100%; transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1); position: relative; overflow: hidden; }
         .content-shrink { transform: scale(0.92) translateY(-10px) translateZ(0); border-radius: 40px; opacity: 0.6; pointer-events: none; filter: blur(5px); }
         .content { flex: 1; overflow-y: auto; scroll-behavior: smooth; width: 100%; height: 100%; padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); position: relative; z-index: 10; }
         
@@ -49,13 +49,12 @@
             backdrop-filter: blur(25px) saturate(200%); -webkit-backdrop-filter: blur(25px) saturate(200%); 
             background: rgba(18, 18, 20, 0.7); border: 1px solid rgba(255, 255, 255, 0.15); 
             box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.08); 
-            will-change: transform; transform: translateZ(0);
         }
-        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #888; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); font-weight: 600; transform-origin: center; height: 100%; will-change: transform, color; }
-        .tab-item:active { transform: scale(0.9) translateZ(0); opacity: 0.7; }
-        .tab-item.active { color: #fff; transform: scale(1.05) translateZ(0); font-weight: 800; }
+        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #888; cursor: pointer; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s; font-weight: 600; height: 100%; }
+        .tab-item:active { transform: scale(0.9); opacity: 0.7; }
+        .tab-item.active { color: #fff; transform: scale(1.05); font-weight: 800; }
         .tab-item.active svg { filter: drop-shadow(0 2px 10px rgba(255,255,255,0.5)); }
-        .tab-item svg { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); color: inherit; transform: translateZ(0); }
+        .tab-item svg { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); color: inherit; }
 
         /* Spatial UI 质感卡片核心 - 更深背景，更亮边缘，增强立体感 */
         .glass-card {
@@ -64,7 +63,6 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255,255,255,0.08);
             border-radius: 28px;
-            will-change: transform; transform: translateZ(0);
         }
 
         /* 智能深浅色切换类 */
@@ -80,16 +78,16 @@
         .large-title { font-size: 38px; font-weight: 900; padding: 60px 24px 10px 24px; letter-spacing: -1px; color: white; transition: all 0.3s ease; display: flex; flex-direction: column; }
 
         /* 优化详情页的性能：去除多余的 background-color 渲染，启用 translate3d 硬件加速 */
-        #recipeDetail { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); will-change: transform; background: #050505; }
+        #recipeDetail { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); background: #050505; }
         .detail-show .detail-inner { opacity: 1; transform: translate3d(0, 0, 0); }
-        .detail-inner { transition: all 0.3s ease 0.1s; opacity: 0; transform: translate3d(0, 30px, 0); will-change: transform, opacity; }
+        .detail-inner { transition: all 0.3s ease 0.1s; opacity: 0; transform: translate3d(0, 30px, 0); }
 
-        .ing-tag { border: 1px solid rgba(255,255,255,0.12); color: #AAA; border-radius: 20px; padding: 7px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); background: rgba(255,255,255,0.06); white-space: nowrap; will-change: transform; transform: translateZ(0); }
-        .ing-tag:active { transform: scale(0.92) translateZ(0); }
-        .ing-tag.selected { background: #FA2D48; color: #fff; border-color: #FA2D48; transform: scale(1.05) translateZ(0); box-shadow: 0 6px 16px rgba(250,45,72,0.4); font-weight: 800; }
+        .ing-tag { border: 1px solid rgba(255,255,255,0.12); color: #AAA; border-radius: 20px; padding: 7px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); background: rgba(255,255,255,0.06); white-space: nowrap; }
+        .ing-tag:active { transform: scale(0.92); }
+        .ing-tag.selected { background: #FA2D48; color: #fff; border-color: #FA2D48; transform: scale(1.05); box-shadow: 0 6px 16px rgba(250,45,72,0.4); font-weight: 800; }
 
         @keyframes stagger-fade-in { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .stagger-item { opacity: 0; animation: stagger-fade-in 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards; will-change: transform, opacity; }
+        .stagger-item { opacity: 0; animation: stagger-fade-in 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
 
         @keyframes pour-action { 0% { stroke-dashoffset: 16; } 100% { stroke-dashoffset: 0; } }
         @keyframes muddle-action { 0%, 100% { transform: translateY(0) translateZ(0); } 50% { transform: translateY(6px) translateZ(0); } }
@@ -119,7 +117,6 @@
             transform: scale(0); 
             opacity: 0; 
             animation: radar-expand 4s cubic-bezier(0.2, 0.9, 0.3, 1.1) forwards; 
-            will-change: transform, opacity; 
         }
         
         .font-art { font-family: "Songti SC", "Noto Serif CJK SC", "STSong", "PT Serif", serif; }
@@ -175,9 +172,8 @@
             border-radius: 28px; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             padding: 16px;
             content-visibility: auto; contain-intrinsic-size: 210px; 
-            will-change: transform; transform: translateZ(0);
         }
-        .cover-card-centered:active { transform: scale(0.96) translateZ(0); filter: brightness(0.9); }
+        .cover-card-centered:active { transform: scale(0.96); filter: brightness(0.9); }
     </style>
 </head>
 <body class="dark">
@@ -191,12 +187,15 @@
     <div class="content-wrap" id="mainWrapper"><div class="content" id="appContent"></div></div>
 
     <!-- 沉浸式详情层 (Bento Grid 适配) -->
-    <div id="recipeDetail" class="absolute inset-0 z-[120] transform translate-y-full flex flex-col overflow-hidden">
+    <div id="recipeDetail" class="absolute inset-0 z-[120] flex flex-col overflow-hidden" style="transform: translate3d(0, 100%, 0);">
         <div class="w-full flex justify-center pt-3 absolute top-0 z-30 opacity-50 pointer-events-none" style="padding-top: calc(8px + env(safe-area-inset-top, 24px));">
             <div class="w-12 h-1.5 bg-white rounded-full"></div>
         </div>
         
-        <div class="h-12 flex items-center justify-end px-6 relative z-30 text-white" style="margin-top: calc(16px + env(safe-area-inset-top, 24px));" id="detailNavBar">
+        <div class="h-12 flex items-center justify-between px-6 relative z-30 text-white" style="margin-top: calc(16px + env(safe-area-inset-top, 24px));" id="detailNavBar">
+            <button onclick="closeRecipeDetail()" class="w-10 h-10 flex items-center justify-center glass-card rounded-full text-lg hover:bg-white/10 active:scale-75 transition-all duration-300 card-bg-switch" style="--dark-bg: rgba(18, 18, 20, 0.7); --light-bg: rgba(255,255,255,0.8);" title="返回">
+                <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current dynamic-text" style="--c-dark: #FFFFFF; --c-light: #000000;"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            </button>
             <div class="flex items-center" id="detailNavRight"></div>
         </div>
         <div class="flex-1 overflow-y-auto px-6 pb-48 relative z-10 text-white detail-inner" id="detailContent"></div>
@@ -219,12 +218,12 @@
     </div>
 
     <!-- 模态层 -->
-    <div id="diyModal" class="absolute inset-0 z-[180] transform translate-y-full transition-transform duration-500 flex flex-col bg-[#050505]"></div>
-    <div id="shoppingModal" class="absolute inset-0 z-[185] transform translate-y-full transition-transform duration-500 flex flex-col bg-[#050505]"></div>
-    <div id="dataModal" class="absolute inset-0 z-[190] transform translate-y-full transition-transform duration-500 flex flex-col bg-[#050505]"></div>
+    <div id="diyModal" class="absolute inset-0 z-[180] flex flex-col bg-[#050505]" style="transform: translate3d(0, 100%, 0); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);"></div>
+    <div id="shoppingModal" class="absolute inset-0 z-[185] flex flex-col bg-[#050505]" style="transform: translate3d(0, 100%, 0); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);"></div>
+    <div id="dataModal" class="absolute inset-0 z-[190] flex flex-col bg-[#050505]" style="transform: translate3d(0, 100%, 0); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);"></div>
 
     <!-- 悬浮导航栏 -->
-    <div class="tab-bar-container" id="bottomTab">
+    <div class="tab-bar-container" id="bottomTab" style="transform: translate3d(0, 0, 0);">
         <div class="tab-item active" id="tab-recipes" onclick="switchPage('recipes', this)">
             <div class="w-[22px] h-[22px] mb-1"><svg viewBox="0 0 32 32" class="fill-current"><rect x="5" y="5" width="9" height="9" rx="3"/><rect x="18" y="5" width="9" height="9" rx="3"/><rect x="5" y="18" width="9" height="9" rx="3"/><rect x="18" y="18" width="9" height="9" rx="3"/></svg></div>
             <span>酒单</span>
@@ -266,7 +265,7 @@
     let currentLuckyFlavor = '全部';
     let currentSort = 'default';
     let tempRating = 0;
-    let currentPage = null; // 新增全局变量，用于记录当前处于哪个页面
+    let currentPage = null; 
 
     const escapeHTML = str => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 
@@ -1014,15 +1013,14 @@
 
     window.openShoppingModal = function() {
         haptic('light');
+        document.getElementById('shoppingModal').style.backgroundColor = isLightMode ? '#F2F2F7' : '#050505';
         renderShoppingContent();
-        document.getElementById('shoppingModal').classList.remove('translate-y-full');
+        document.getElementById('shoppingModal').style.transform = 'translate3d(0, 0, 0)';
     }
 
     window.closeShoppingModal = function() {
         haptic('light');
-        const modal = document.getElementById('shoppingModal');
-        modal.style.transform = ''; 
-        modal.classList.add('translate-y-full');
+        document.getElementById('shoppingModal').style.transform = 'translate3d(0, 100%, 0)';
         renderCabinet(); 
     }
 
@@ -1032,11 +1030,12 @@
         const svg = el.querySelector('svg');
         const textWrap = el.querySelector('.shop-text-wrap');
         const themeColor = '#0A84FF'; 
+        const inactiveBorder = isLightMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.3)';
 
         if(c.dataset.checked === '1') {
             c.dataset.checked = '0';
             c.style.backgroundColor = '';
-            c.style.borderColor = 'rgba(255,255,255,0.3)';
+            c.style.borderColor = inactiveBorder;
             svg.style.opacity = '0';
             textWrap.classList.remove('opacity-30', 'line-through');
             shoppingCheckedList = shoppingCheckedList.filter(n => n !== item);
@@ -1161,20 +1160,30 @@
 
     function renderShoppingContent() {
         const modal = document.getElementById('shoppingModal');
+        modal.style.backgroundColor = isLightMode ? '#F2F2F7' : '#050505';
+        
+        let headerBg = isLightMode ? 'rgba(242, 242, 247, 0.9)' : 'rgba(0, 0, 0, 0.9)';
+        let headerBorder = isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+        let textPrimary = isLightMode ? '#000000' : '#FFFFFF';
+        let textSecondary = isLightMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)';
+        let textEmpty = isLightMode ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';
+        let dividerLine = isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)';
+        let dividerTextBg = isLightMode ? '#E5E5EA' : '#121214';
+
         let html = `
-            <div class="flex items-center justify-between px-6 pb-3 relative z-20 text-white border-b border-white/10 bg-[#000000]/90 backdrop-blur-md" style="padding-top: calc(16px + env(safe-area-inset-top, 24px));">
+            <div class="flex items-center justify-between px-6 pb-3 relative z-20 border-b backdrop-blur-md" style="padding-top: calc(16px + env(safe-area-inset-top, 24px)); background-color: ${headerBg}; border-color: ${headerBorder}; color: ${textPrimary};">
                 <button onclick="closeShoppingModal()" class="text-ios-blue text-[16px] p-2 -ml-2 font-medium active:opacity-50 transition-opacity">完成</button>
-                <div class="font-bold text-[16px] tracking-wide">我的采购清单</div>
+                <div class="font-bold text-[16px] tracking-wide dynamic-text" style="--c-dark: #FFFFFF; --c-light: #000000;">我的采购清单</div>
                 <button onclick="clearShoppingList()" class="text-ios-red text-[14px] p-2 -mr-2 font-medium active:opacity-50 transition-opacity">清空全部</button>
             </div>
-            <div class="flex-1 overflow-y-auto px-6 py-6 text-white pb-32">`;
+            <div class="flex-1 overflow-y-auto px-6 py-6 pb-32" style="background-color: ${isLightMode ? '#F2F2F7' : '#050505'}; color: ${textPrimary};">`;
 
         if (shoppingList.length === 0) {
-            html += `<div class="text-center text-white/30 text-sm mt-20">清单空空如也<br><br>去酒柜看看有什么缺少的材料吧！</div>`;
+            html += `<div class="text-center text-sm mt-20" style="color: ${textEmpty}">清单空空如也<br><br>去酒柜看看有什么缺少的材料吧！</div>`;
         } else {
             html += `
             <div class="flex justify-between items-center mb-4 ml-1 min-h-[28px]">
-                <div class="text-[12px] text-white/50">点击可将其标记为已采购：</div>
+                <div class="text-[12px]" style="color: ${textSecondary}">点击可将其标记为已采购：</div>
                 <div id="clearCheckedBtn" onclick="clearCheckedShoppingItems()" class="text-[12px] text-ios-blue cursor-pointer active:opacity-50 font-bold bg-ios-blue/10 px-3 py-1 rounded-full border border-ios-blue/20" style="display: ${shoppingCheckedList.length > 0 ? 'block' : 'none'};">清理已购</div>
             </div>`;
             
@@ -1182,7 +1191,7 @@
             const checkedItems = shoppingList.filter(item => shoppingCheckedList.includes(item));
 
             const renderItem = (item, isChecked) => {
-                const inlineStyle = isChecked ? `background-color: #0A84FF; border-color: #0A84FF;` : 'border-color: rgba(255,255,255,0.3);';
+                const inlineStyle = isChecked ? `background-color: #0A84FF; border-color: #0A84FF;` : `border-color: ${isLightMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.3)'};`;
                 const svgOp = isChecked ? '1' : '0';
                 const textClass = isChecked ? 'opacity-30 line-through' : '';
                 return `
@@ -1199,7 +1208,7 @@
             uncheckedItems.forEach(item => html += renderItem(item, false));
             
             if(checkedItems.length > 0 && uncheckedItems.length > 0) {
-                html += `<div class="w-full h-px bg-white/10 my-6 border-t border-dashed border-white/20 relative flex justify-center"><span class="absolute -top-2.5 bg-[#000000] px-3 text-[10px] text-white/40 tracking-widest font-bold z-10">已采购项目</span></div>`;
+                html += `<div class="w-full h-px my-6 border-t border-dashed relative flex justify-center" style="border-color: ${dividerLine};"><span class="absolute -top-2.5 px-3 text-[10px] tracking-widest font-bold z-10 rounded-full" style="background-color: ${dividerTextBg}; color: ${textSecondary};">已采购项目</span></div>`;
             }
 
             checkedItems.forEach(item => html += renderItem(item, true));
@@ -1210,19 +1219,25 @@
 
     window.openDataModal = function() {
         haptic('light');
-        document.getElementById('dataModal').classList.remove('translate-y-full');
+        document.getElementById('dataModal').style.backgroundColor = isLightMode ? '#F2F2F7' : '#050505';
+        document.getElementById('dataModal').style.transform = 'translate3d(0, 0, 0)';
         renderDataModal();
     }
 
     window.closeDataModal = function() {
         haptic('light');
-        const modal = document.getElementById('dataModal');
-        modal.style.transform = ''; 
-        modal.classList.add('translate-y-full');
+        document.getElementById('dataModal').style.transform = 'translate3d(0, 100%, 0)';
     }
 
     function renderDataModal(mode = 'export') {
         const modal = document.getElementById('dataModal');
+        modal.style.backgroundColor = isLightMode ? '#F2F2F7' : '#050505';
+        
+        let headerBg = isLightMode ? 'rgba(242, 242, 247, 0.9)' : 'rgba(0, 0, 0, 0.9)';
+        let headerBorder = isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+        let textPrimary = isLightMode ? '#000000' : '#FFFFFF';
+        let textSecondary = isLightMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)';
+
         let contentHtml = '';
         
         if (mode === 'export') {
@@ -1236,28 +1251,28 @@
             const exportStr = btoa(encodeURIComponent(JSON.stringify(dataToExport)));
             
             contentHtml = `
-                <div class="text-[12px] text-white/50 mb-2 mt-4 leading-relaxed">你的所有配方、收藏、笔记与酒柜数据已打包为以下特征码，请复制并妥善保存：</div>
-                <textarea readonly class="w-full glass-card border border-white/10 rounded-[20px] p-4 text-[11px] font-mono text-white/70 h-40 break-all resize-none outline-none shadow-inner card-bg-switch" style="--dark-bg: rgba(18, 18, 20, 0.7); --light-bg: rgba(255,255,255,0.8);">${exportStr}</textarea>
+                <div class="text-[12px] mb-2 mt-4 leading-relaxed" style="color: ${textSecondary}">你的所有配方、收藏、笔记与酒柜数据已打包为以下特征码，请复制并妥善保存：</div>
+                <textarea readonly class="w-full glass-card border rounded-[20px] p-4 text-[11px] font-mono h-40 break-all resize-none outline-none shadow-inner card-bg-switch dynamic-text" style="--dark-bg: rgba(18, 18, 20, 0.7); --light-bg: rgba(255,255,255,0.8); border-color: ${isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'}; --c-dark: rgba(255,255,255,0.7); --c-light: rgba(0,0,0,0.7);">${exportStr}</textarea>
                 <button onclick="copyExportData('${exportStr}')" class="w-full mt-4 py-4 bg-ios-blue text-white rounded-xl font-bold active:scale-95 transition-all shadow-[0_4px_15px_rgba(10,132,255,0.4)]">复制特征码</button>
             `;
         } else {
             contentHtml = `
                 <div class="text-[12px] text-ios-red mb-2 mt-4 leading-relaxed font-bold">⚠️ 警告：导入新特征码将覆盖当前设备上的所有本地数据。</div>
-                <textarea id="importInput" placeholder="在此粘贴你的备份特征码..." class="w-full glass-card border border-white/10 rounded-[20px] p-4 text-[12px] font-mono text-white h-40 resize-none outline-none shadow-inner focus:border-ios-gold transition-all card-bg-switch dynamic-text" style="--dark-bg: rgba(18, 18, 20, 0.7); --light-bg: rgba(255,255,255,0.8); --c-dark: rgba(255,255,255,0.9); --c-light: rgba(0,0,0,0.9);"></textarea>
+                <textarea id="importInput" placeholder="在此粘贴你的备份特征码..." class="w-full glass-card border rounded-[20px] p-4 text-[12px] font-mono h-40 resize-none outline-none shadow-inner focus:border-ios-gold transition-all card-bg-switch dynamic-text" style="--dark-bg: rgba(18, 18, 20, 0.7); --light-bg: rgba(255,255,255,0.8); border-color: ${isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'}; --c-dark: rgba(255,255,255,0.9); --c-light: rgba(0,0,0,0.9);"></textarea>
                 <button onclick="confirmImportData()" class="w-full mt-4 py-4 bg-ios-gold text-black rounded-xl font-black active:scale-95 transition-all shadow-[0_4px_15px_rgba(212,175,55,0.4)]">立即导入并覆盖</button>
             `;
         }
 
         modal.innerHTML = `
-            <div class="flex items-center justify-between px-6 pb-3 relative z-20 text-white border-b border-white/10 bg-[#000000]/90 backdrop-blur-md" style="padding-top: calc(16px + env(safe-area-inset-top, 24px));">
+            <div class="flex items-center justify-between px-6 pb-3 relative z-20 border-b backdrop-blur-md" style="padding-top: calc(16px + env(safe-area-inset-top, 24px)); background-color: ${headerBg}; border-color: ${headerBorder}; color: ${textPrimary};">
                 <button onclick="closeDataModal()" class="text-ios-blue text-[16px] p-2 -ml-2 font-medium active:opacity-50 transition-opacity">完成</button>
-                <div class="font-bold text-[16px] tracking-wide">数据迁移</div>
+                <div class="font-bold text-[16px] tracking-wide dynamic-text" style="--c-dark: #FFFFFF; --c-light: #000000;">数据迁移</div>
                 <div class="w-10"></div>
             </div>
-            <div class="flex-1 px-6 py-6 text-white pb-32">
-                <div class="flex bg-white/5 p-1 rounded-2xl mb-6 border border-white/10">
-                    <button onclick="renderDataModal('export')" class="flex-1 py-2 text-sm font-bold rounded-xl transition-all ${mode==='export'?'bg-[#2C2C2E] shadow-sm':'text-white/50 hover:text-white/80'}">导出备份</button>
-                    <button onclick="renderDataModal('import')" class="flex-1 py-2 text-sm font-bold rounded-xl transition-all ${mode==='import'?'bg-[#2C2C2E] shadow-sm':'text-white/50 hover:text-white/80'}">恢复数据</button>
+            <div class="flex-1 px-6 py-6 pb-32" style="background-color: ${isLightMode ? '#F2F2F7' : '#050505'}; color: ${textPrimary};">
+                <div class="flex p-1 rounded-2xl mb-6 border" style="background-color: ${isLightMode ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}; border-color: ${isLightMode ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)'};">
+                    <button onclick="renderDataModal('export')" class="flex-1 py-2 text-sm font-bold rounded-xl transition-all ${mode==='export'?(isLightMode?'bg-white shadow-sm text-black':'bg-[#2C2C2E] shadow-sm text-white'):'text-white/50 hover:text-white/80'}" style="${mode!=='export' && isLightMode ? 'color: rgba(0,0,0,0.5);' : ''}">导出备份</button>
+                    <button onclick="renderDataModal('import')" class="flex-1 py-2 text-sm font-bold rounded-xl transition-all ${mode==='import'?(isLightMode?'bg-white shadow-sm text-black':'bg-[#2C2C2E] shadow-sm text-white'):'text-white/50 hover:text-white/80'}" style="${mode!=='import' && isLightMode ? 'color: rgba(0,0,0,0.5);' : ''}">恢复数据</button>
                 </div>
                 ${contentHtml}
             </div>
@@ -1723,7 +1738,7 @@
                 </div>
             </div>
         `;
-        modal.classList.remove('translate-y-full');
+        modal.style.transform = 'translate3d(0, 0, 0)';
     }
 
     window.selectDIYBase = function(val, el) {
@@ -1774,9 +1789,7 @@
 
     window.closeDIYModal = function() {
         haptic('light');
-        const modal = document.getElementById('diyModal');
-        modal.style.transform = ''; 
-        modal.classList.add('translate-y-full');
+        document.getElementById('diyModal').style.transform = 'translate3d(0, 100%, 0)';
     }
 
     window.saveDIYRecipe = function() {
@@ -1842,19 +1855,19 @@
             <div class="px-6 mb-8 space-y-4 relative z-10">
                 <div class="glass-card rounded-[20px] p-5 flex justify-between items-center card-bg-switch" style="--dark-bg: rgba(18, 18, 20, 0.7); --light-bg: rgba(255,255,255,0.8);">
                     <span class="font-bold text-sm dynamic-text" style="--c-dark: #E5E5EA; --c-light: #333333;">全局量酒单位</span>
-                    <div class="relative flex bg-[#0A0A0A] rounded-full p-1 cursor-pointer w-[100px] h-[36px] active:scale-95 transition-transform" onclick="toggleUnit()">
+                    <div class="relative flex rounded-full p-1 cursor-pointer w-[100px] h-[36px] active:scale-95 transition-transform" style="background-color: ${isLightMode ? 'rgba(0,0,0,0.08)' : '#0A0A0A'}; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);" onclick="toggleUnit()">
                         <div class="absolute top-1 bottom-1 w-[46px] bg-ios-red rounded-full transition-all duration-300 ease-out shadow-[0_2px_8px_rgba(250,45,72,0.4)]" style="left: ${isOz ? '50px' : '4px'}"></div>
-                        <div class="flex-1 flex justify-center items-center z-10 text-[12px] font-black transition-colors ${!isOz ? 'text-white' : 'text-white/40'}">ML</div>
-                        <div class="flex-1 flex justify-center items-center z-10 text-[12px] font-black transition-colors ${isOz ? 'text-white' : 'text-white/40'}">OZ</div>
+                        <div class="flex-1 flex justify-center items-center z-10 text-[12px] font-black transition-colors ${!isOz ? 'text-white' : (isLightMode ? 'text-black/40' : 'text-white/40')}">ML</div>
+                        <div class="flex-1 flex justify-center items-center z-10 text-[12px] font-black transition-colors ${isOz ? 'text-white' : (isLightMode ? 'text-black/40' : 'text-white/40')}">OZ</div>
                     </div>
                 </div>
                 
                 <div class="glass-card rounded-[20px] p-5 flex justify-between items-center card-bg-switch" style="--dark-bg: rgba(18, 18, 20, 0.7); --light-bg: rgba(255,255,255,0.8);">
                     <span class="font-bold text-sm dynamic-text" style="--c-dark: #E5E5EA; --c-light: #333333;">外观模式</span>
-                    <div class="relative flex bg-[#0A0A0A] rounded-full p-1 cursor-pointer w-[100px] h-[36px] active:scale-95 transition-transform" onclick="toggleTheme()">
-                        <div class="absolute top-1 bottom-1 w-[46px] bg-[#64D2FF] rounded-full transition-all duration-300 ease-out shadow-[0_2px_8px_rgba(100,210,255,0.4)]" style="left: ${isLightMode ? '50px' : '4px'}"></div>
-                        <div class="flex-1 flex justify-center items-center z-10 text-[14px] transition-colors ${!isLightMode ? 'text-white' : 'opacity-40'}">🌙</div>
-                        <div class="flex-1 flex justify-center items-center z-10 text-[14px] transition-colors ${isLightMode ? 'text-white' : 'opacity-40'}">🌞</div>
+                    <div class="relative flex rounded-full p-1 cursor-pointer w-[100px] h-[36px] active:scale-95 transition-transform" style="background-color: ${isLightMode ? 'rgba(0,0,0,0.08)' : '#0A0A0A'}; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);" onclick="toggleTheme()">
+                        <div class="absolute top-1 bottom-1 w-[46px] rounded-full transition-all duration-300 ease-out" style="background-color: ${isLightMode ? '#FF9F0A' : '#64D2FF'}; box-shadow: 0 2px 8px ${isLightMode ? 'rgba(255,159,10,0.4)' : 'rgba(100,210,255,0.4)'}; left: ${isLightMode ? '50px' : '4px'}"></div>
+                        <div class="flex-1 flex justify-center items-center z-10 text-[14px] transition-colors ${!isLightMode ? 'text-white' : 'opacity-40 grayscale'}">🌙</div>
+                        <div class="flex-1 flex justify-center items-center z-10 text-[14px] transition-colors ${isLightMode ? 'text-white' : 'opacity-40 grayscale'}">🌞</div>
                     </div>
                 </div>
                 
@@ -1996,7 +2009,7 @@
         showMsg('📝 专属品鉴笔记已保存！', true);
     }
 
-    function openDetail(id) {
+    window.openDetail = function(id) {
         haptic('light'); 
         currentDetailId = String(id);
         const d = cocktailDB.find(x => String(x.id) === currentDetailId); 
@@ -2079,7 +2092,6 @@
 
         let stepsHtml = d.steps.map((s, i) => `
             <div class="relative flex items-start px-5 py-4 cursor-pointer active:opacity-70 transition-opacity" data-done="0" id="step-item-${i}" onclick="toggleStep(${i}, ${d.steps.length}, '${isLightMode ? d.darkerColor : d.themeColor}')">
-                ${i !== d.steps.length - 1 ? `<div class="absolute left-[33px] top-[40px] bottom-0 w-[2px] z-0 transition-colors duration-300" style="background-color: ${isLightMode ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}" id="step-axis-${i}"></div>` : ''}
                 <div class="relative z-10 w-7 h-7 rounded-full border flex flex-shrink-0 items-center justify-center mr-4 mt-0.5 transition-all duration-300 shadow-sm" style="background-color: ${isLightMode ? '#E5E5EA' : '#121214'}; border-color: ${isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'}" id="step-num-bg-${i}">
                     <span class="font-black text-[12px] transition-colors duration-300" style="color: ${isLightMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)'}" id="step-num-${i}">${i+1}</span>
                 </div>
@@ -2189,29 +2201,55 @@
         document.getElementById('detailContent').scrollTop = 0;
         document.getElementById('mainWrapper').classList.add('content-shrink');
         document.getElementById('bottomTab').style.transform = 'translateY(120px)';
+        
+        // 【关键修复】同步重置硬件加速的内联坐标，覆盖原本隐藏的 100%
+        detail.style.transform = 'translate3d(0, 0, 0)';
         detail.classList.remove('translate-y-full');
         setTimeout(() => { detail.classList.add('detail-show'); startSim(d); }, 50);
     }
 
-    window.closeRecipeDetail = function() { 
+    window.closeRecipeDetail = function(slideRight = false) { 
         if(animTimer) clearInterval(animTimer); 
         const detail = document.getElementById('recipeDetail'); 
-        detail.style.transform = ''; 
-        // 去除了背景颜色的清理，减轻重绘负担
+        const mainWrap = document.getElementById('mainWrapper');
+        
+        // 强制使用硬件加速平滑过渡
+        detail.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
+        if (slideRight === true) {
+            detail.style.transform = 'translate3d(100%, 0, 0)'; 
+        } else {
+            detail.style.transform = 'translate3d(0, 100%, 0)'; 
+        }
+        mainWrap.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
+        mainWrap.style.transform = '';
+        
         detail.classList.remove('detail-show'); 
         detail.classList.add('translate-y-full'); 
-        document.getElementById('mainWrapper').classList.remove('content-shrink'); 
+        mainWrap.classList.remove('content-shrink'); 
         document.getElementById('bottomTab').style.transform = 'translateY(0)'; 
+        
         const panel = document.getElementById('deleteMenuPanel');
         if(panel) {
             panel.classList.remove('opacity-100', 'scale-100');
             panel.classList.add('opacity-0', 'scale-95', 'pointer-events-none', 'hidden');
         }
         
-        const profileTab = document.getElementById('tab-profile');
-        if(profileTab && profileTab.classList.contains('active')) {
-            renderProfile();
-        }
+        // 【核心优化】将所有会引发重排(Reflow)的 DOM 渲染操作推迟到 400ms 后(即动画结束后)执行，彻底告别卡顿
+        setTimeout(() => {
+            const profileTab = document.getElementById('tab-profile');
+            if(profileTab && profileTab.classList.contains('active')) {
+                renderProfile();
+            }
+            // 清理内部SVG缓存以释放内存
+            const stage = document.getElementById('animationStage');
+            if (stage) stage.innerHTML = '';
+            
+            // 退出动画完成后，将DOM瞬间重置到底部隐藏状态，确保下次能正常从下往上弹出
+            if (slideRight === true) {
+                detail.style.transition = 'none';
+                detail.style.transform = 'translate3d(0, 100%, 0)';
+            }
+        }, 400);
     }
 
     window.toggleDeleteMenu = function() {
@@ -2254,143 +2292,148 @@
         const inactiveBorder = isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
         const inactiveText = isLightMode ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
         const inactiveAxis = isLightMode ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
-        
-        if(animTimer) {
-            clearInterval(animTimer); animTimer = null;
-            for(let i=0; i<totalLength; i++) {
-                const el = document.getElementById(`step-item-${i}`);
-                const textWrap = document.getElementById(`step-text-${i}`);
-                const numBg = document.getElementById(`step-num-bg-${i}`);
-                const num = document.getElementById(`step-num-${i}`);
-                const axis = document.getElementById(`step-axis-${i}`);
-                if(el && el.dataset.done === '0') { 
-                    el.style.backgroundColor = ''; 
-                    textWrap.classList.remove('text-white', 'text-black');
-                    textWrap.classList.add(isLightMode ? 'text-black/80' : 'text-white/80');
-                    numBg.style.backgroundColor = inactiveBg;
-                    numBg.style.borderColor = inactiveBorder;
-                    numBg.style.boxShadow = 'none';
-                    num.style.color = inactiveText;
-                    if(axis) axis.style.backgroundColor = inactiveAxis;
-                }
-            }
-        }
-        
-        if(drink) {
-            const st = document.getElementById('animationStage');
-            if(st) st.innerHTML = renderStepSvg(drink, drink.steps[idx], idx);
-        }
-        
-        const el = document.getElementById(`step-item-${idx}`);
-        const textWrap = document.getElementById(`step-text-${idx}`);
-        const numBg = document.getElementById(`step-num-bg-${idx}`);
-        const num = document.getElementById(`step-num-${idx}`);
-        const axis = document.getElementById(`step-axis-${idx}`);
-        
-        if (el.dataset.done === '1') {
-            el.dataset.done = '0';
-            textWrap.classList.remove('line-through', 'text-white/30', 'text-black/30');
-            textWrap.classList.add(isLightMode ? 'text-black/80' : 'text-white/80');
+
+        const item = document.getElementById('step-item-' + idx);
+        const numBg = document.getElementById('step-num-bg-' + idx);
+        const numText = document.getElementById('step-num-' + idx);
+        const textEl = document.getElementById('step-text-' + idx);
+        const axis = document.getElementById('step-axis-' + idx);
+
+        if (item.dataset.done === '1') {
+            item.dataset.done = '0';
             numBg.style.backgroundColor = inactiveBg;
             numBg.style.borderColor = inactiveBorder;
             numBg.style.boxShadow = 'none';
-            num.style.color = inactiveText;
+            numText.style.color = inactiveText;
+            textEl.classList.remove('opacity-50', 'line-through');
             if(axis) axis.style.backgroundColor = inactiveAxis;
         } else {
-            el.dataset.done = '1';
-            textWrap.classList.add('line-through', isLightMode ? 'text-black/30' : 'text-white/30');
-            textWrap.classList.remove('text-white/80', 'text-white', 'text-black/80', 'text-black');
+            item.dataset.done = '1';
             numBg.style.backgroundColor = themeColor;
             numBg.style.borderColor = themeColor;
-            numBg.style.boxShadow = `0 0 15px ${themeColor}80`;
-            num.style.color = '#fff';
-            if(axis) axis.style.backgroundColor = themeColor; 
+            numBg.style.boxShadow = `0 0 12px ${themeColor}66`;
+            numText.style.color = '#fff';
+            textEl.classList.add('opacity-50', 'line-through');
+            if(axis) axis.style.backgroundColor = themeColor;
+            
+            if(drink && drink.steps && drink.steps[idx]) {
+                const stage = document.getElementById('animationStage');
+                if(stage) {
+                    stage.innerHTML = renderStepSvg(drink, drink.steps[idx], idx);
+                }
+            }
         }
     };
 
-    function startSim(drink) {
-        if(animTimer) clearInterval(animTimer);
-        let cur = 0;
-        const inactiveBg = isLightMode ? '#E5E5EA' : '#121214';
-        const inactiveBorder = isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
-        const inactiveText = isLightMode ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
-        const inactiveAxis = isLightMode ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
-        const activeBgFade = isLightMode ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)';
-        
-        const update = () => {
-            const st = document.getElementById('animationStage'); if(!st) return;
-            st.innerHTML = renderStepSvg(drink, drink.steps[cur], cur);
-            for(let i=0; i<drink.steps.length; i++) {
-                const el = document.getElementById(`step-item-${i}`);
-                const textWrap = document.getElementById(`step-text-${i}`);
-                const numBg = document.getElementById(`step-num-bg-${i}`);
-                const num = document.getElementById(`step-num-${i}`);
-                const axis = document.getElementById(`step-axis-${i}`);
-                if(el && el.dataset.done === '0') { 
-                    el.style.backgroundColor = i===cur ? activeBgFade : ''; 
-                    textWrap.classList.toggle(isLightMode ? 'text-black' : 'text-white', i===cur);
-                    textWrap.classList.toggle(isLightMode ? 'text-black/80' : 'text-white/80', i!==cur);
-                    numBg.style.backgroundColor = i===cur ? (isLightMode ? drink.darkerColor : drink.themeColor) : inactiveBg;
-                    numBg.style.borderColor = i===cur ? (isLightMode ? drink.darkerColor : drink.themeColor) : inactiveBorder;
-                    numBg.style.boxShadow = i===cur ? `0 0 15px ${(isLightMode ? drink.darkerColor : drink.themeColor)}80` : 'none';
-                    num.style.color = i===cur ? '#fff' : inactiveText;
-                    if(axis) axis.style.backgroundColor = i===cur ? (isLightMode ? drink.darkerColor : drink.themeColor) : inactiveAxis;
+    window.startSim = function(drink) {
+        const stage = document.getElementById('animationStage');
+        if(stage && drink.steps && drink.steps.length > 0) {
+            stage.innerHTML = renderStepSvg(drink, drink.steps[0], 0);
+        }
+    };
+
+    window.onload = function() {
+        loadLocalData();
+        switchPage('recipes', document.getElementById('tab-recipes'));
+
+        // 【手势交互】添加原生的物理下拉与边缘右滑手势支持
+        const detailEl = document.getElementById('recipeDetail');
+        const detailContent = document.getElementById('detailContent');
+        const mainWrap = document.getElementById('mainWrapper');
+        let startY = 0;
+        let startX = 0;
+        let currentY = 0;
+        let currentX = 0;
+        let isDraggingVertical = false;
+        let isDraggingHorizontal = false;
+        let isEdgeSwipe = false;
+
+        detailEl.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            isDraggingVertical = false;
+            isDraggingHorizontal = false;
+            // 判断是否从屏幕左侧边缘 (距离左边缘 40px 以内) 开始滑动
+            isEdgeSwipe = startX < 40;
+        }, { passive: true });
+
+        detailEl.addEventListener('touchmove', (e) => {
+            let deltaX = e.touches[0].clientX - startX;
+            let deltaY = e.touches[0].clientY - startY;
+
+            // 首次移动时确定手势的唯一方向（避免斜划产生冲突）
+            if (!isDraggingVertical && !isDraggingHorizontal) {
+                if (isEdgeSwipe && deltaX > Math.abs(deltaY) && deltaX > 0) {
+                    isDraggingHorizontal = true;
+                    detailEl.style.transition = 'none';
+                    mainWrap.style.transition = 'none';
+                } else if (deltaY > 0 && detailContent.scrollTop <= 5) {
+                    isDraggingVertical = true;
+                    detailEl.style.transition = 'none';
+                    mainWrap.style.transition = 'none';
+                } else {
+                    return;
                 }
             }
-            cur = (cur + 1) % drink.steps.length;
-        };
-        update(); animTimer = setInterval(update, 2400);
-    }
 
-    let startY = 0, startX = 0, currentY = 0, isSwiping = false, rafId = null; 
-    const detailEl = document.getElementById('recipeDetail');
-    const detailContent = document.getElementById('detailContent');
-
-    detailEl.addEventListener('touchstart', e => {
-        if (detailContent.scrollTop > 5) return; 
-        startY = e.touches[0].clientY; startX = e.touches[0].clientX; isSwiping = false; 
-        detailEl.style.transition = 'none'; 
-        if (rafId) cancelAnimationFrame(rafId);
-    }, {passive: true});
-
-    detailEl.addEventListener('touchmove', e => {
-        if (detailContent.scrollTop > 5 || startY === 0) return;
-        const touchY = e.touches[0].clientY, touchX = e.touches[0].clientX;
-        let deltaY = touchY - startY, deltaX = touchX - startX;
-
-        if (!isSwiping && Math.abs(deltaX) > Math.abs(deltaY)) { startY = 0; return; }
-        
-        isSwiping = true; currentY = touchY;
-
-        if (deltaY > 0) {
-            e.preventDefault(); 
-            if (rafId) cancelAnimationFrame(rafId);
-            rafId = requestAnimationFrame(() => {
-                let dampedY = deltaY * (1 - (deltaY / (window.innerHeight * 2.5)));
-                // 仅利用 transform 进行硬件加速平移，彻底移除耗性能的背景色重绘
-                detailEl.style.transform = `translate3d(0, ${dampedY}px, 0)`;
-            });
-        }
-    }, {passive: false});
-
-    detailEl.addEventListener('touchend', e => {
-        if (startY === 0 || !isSwiping) return;
-        if (rafId) cancelAnimationFrame(rafId);
-        let deltaY = currentY - startY;
-        detailEl.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)'; 
-        if (deltaY > 140) { 
-            haptic('medium', { force: true }); 
-            closeRecipeDetail(); 
-        } else { 
-            if (!detailEl.classList.contains('translate-y-full')) { 
-                detailEl.style.transform = 'translate3d(0,0,0)'; 
+            // 处理边缘右滑
+            if (isDraggingHorizontal) {
+                if (e.cancelable) e.preventDefault(); 
+                currentX = deltaX;
+                if (currentX > 0) {
+                    detailEl.style.transform = `translate3d(${currentX}px, 0, 0)`;
+                    const progress = Math.min(currentX / window.innerWidth, 1);
+                    const scale = 0.92 + (0.08 * progress);
+                    const ty = -10 * (1 - progress);
+                    mainWrap.style.transform = `scale(${scale}) translateY(${ty}px) translateZ(0)`;
+                }
             } 
-        }
-        startY = 0; currentY = 0; startX = 0; isSwiping = false;
-    });
+            // 处理下拉
+            else if (isDraggingVertical) {
+                if (e.cancelable) e.preventDefault(); 
+                currentY = deltaY;
+                if (currentY > 0) {
+                    detailEl.style.transform = `translate3d(0, ${currentY}px, 0)`;
+                    const progress = Math.min(currentY / window.innerHeight, 1);
+                    const scale = 0.92 + (0.08 * progress);
+                    const ty = -10 * (1 - progress);
+                    mainWrap.style.transform = `scale(${scale}) translateY(${ty}px) translateZ(0)`;
+                }
+            }
+        }, { passive: false });
 
-    loadLocalData();
-    window.onload = () => switchPage('recipes', document.getElementById('tab-recipes'));
+        detailEl.addEventListener('touchend', (e) => {
+            if (isDraggingHorizontal) {
+                // 右滑超过屏幕宽度 1/3 时触发关闭
+                if (currentX > window.innerWidth / 3) {
+                    closeRecipeDetail(true); // 传入 true 以向右平滑退出
+                } else {
+                    // 未达到阈值，弹性回弹回原位
+                    detailEl.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
+                    detailEl.style.transform = 'translate3d(0, 0, 0)';
+                    mainWrap.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
+                    mainWrap.style.transform = 'scale(0.92) translateY(-10px) translateZ(0)';
+                }
+            } else if (isDraggingVertical) {
+                // 下拉超过 120px 阈值，触发关闭
+                if (currentY > 120) {
+                    closeRecipeDetail(false);
+                } else if (currentY > 0) {
+                    detailEl.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
+                    detailEl.style.transform = 'translate3d(0, 0, 0)';
+                    mainWrap.style.transition = 'all 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
+                    mainWrap.style.transform = 'scale(0.92) translateY(-10px) translateZ(0)'; 
+                }
+            }
+            
+            // 重置状态
+            isDraggingVertical = false;
+            isDraggingHorizontal = false;
+            isEdgeSwipe = false;
+            currentY = 0;
+            currentX = 0;
+        });
+    };
 </script>
 </body>
 </html>
